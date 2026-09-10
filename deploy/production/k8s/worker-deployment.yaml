@@ -1,0 +1,79 @@
+# Phase 15 — BullMQ background workers (notifications, geofence-eval, exports,
+# retention, partition-maintenance). Scales independently of the API; no probes
+# beyond the worker's own Prometheus exporter (:9091/metrics).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetflow-worker
+  namespace: fleetflow
+  labels:
+    app: fleetflow-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleetflow-worker
+  template:
+    metadata:
+      labels:
+        app: fleetflow-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/YOUR-ORG/fleetflow-worker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: metrics
+              containerPort: 9091
+          envFrom:
+            - configMapRef:
+                name: fleetflow-config
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "fleetflow-worker"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: REDIS_URL
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: JWT_ACCESS_SECRET
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: JWT_REFRESH_SECRET
+            - name: METRICS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: METRICS_TOKEN
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: exportdata
+              mountPath: /app/data/exports
+      volumes:
+        - name: exportdata
+          persistentVolumeClaim:
+            claimName: fleetflow-exportdata

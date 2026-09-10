@@ -1,0 +1,57 @@
+# Phase 14 (blueprint §12.2): full-stack E2E on a schedule — the repo's
+# established E2E convention (backend/scripts/verify-phase12-web.mjs, the same
+# script every phase verifies locally) run against the containerized
+# api+worker+Postgres+Redis stack. Weekly, not per-PR, to control runner cost.
+name: E2E (scheduled, full stack)
+
+on:
+  schedule:
+    # Mondays 03:17 UTC.
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Full-stack E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot infra (Postgres+PostGIS, Redis)
+        run: docker compose up -d postgres redis
+
+      - name: Migrate the empty DB (compose volumes are fresh here)
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://fleetflow:fleetflow@localhost:5432/fleetflow?schema=public
+        run: |
+          npm ci --silent
+          npx prisma generate
+          npx prisma migrate deploy
+
+      - name: Boot api + worker
+        run: docker compose up -d --build api worker
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/health >/dev/null 2>&1; then
+              echo "API healthy after ~$((i * 5))s"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "API never became healthy" >&2
+          docker compose ps
+          exit 1
+
+      - name: Full-stack web E2E (every screen + job queues)
+        working-directory: backend
+        run: node scripts/verify-phase12-web.mjs
+
+      - name: Shut down the stack
+        if: always()
+        run: docker compose down -v

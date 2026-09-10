@@ -1,0 +1,34 @@
+# FleetFlow Prometheus scrape config (Phase 13, blueprint §11.2).
+#
+# Two scrape targets, matching the two processes that hold metrics:
+#   1. the API process  -> GET /api/metrics  (http_request_*, ws_connections,
+#      db_up, fleetflow_queue_depth) — protected by METRICS_TOKEN (config.metricsToken,
+#      §4.2 "internal network / auth token, not public"); the bearer token below
+#      must match the compose/API environment.
+#   2. the worker process -> GET :9091/metrics (geofence_eval_*,
+#      notification_dispatch_*, fleetflow_queue_completed/failed_total,
+#      fleetflow_queue_depth) — same token.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: fleetflow-api
+    metrics_path: /api/metrics
+    bearer_token: compose-metrics-token
+    static_configs:
+      - targets: ["api:3000"]
+        labels:
+          service: fleetflow-api
+
+  - job_name: fleetflow-worker
+    metrics_path: /metrics
+    bearer_token: compose-metrics-token
+    static_configs:
+      - targets: ["worker:9091"]
+        labels:
+          service: fleetflow-worker
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

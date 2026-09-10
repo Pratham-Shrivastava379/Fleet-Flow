@@ -1,0 +1,124 @@
+# Phase 14 (blueprint §13.4): CD. Merge to `main` on green CI (branch
+# protection) builds & pushes the api/worker/dashboard images to GHCR (tagged
+# with the git SHA), runs `prisma migrate deploy` against the staging database
+# as a pre-deploy step (never `migrate dev`), then rolls the staging stack
+# forward and smoke-tests it — automatically rolling back to the previous image
+# tag when the smoke test fails (deploy/staging/deploy.sh).
+#
+# Staging target: the docker-compose-based parity stack in deploy/staging/,
+# reached via a self-hosted runner on the staging host. The whole loop
+# (deploy → smoke → rollback) is the same script verified locally against the
+# local compose stack. The jobs are gated on secrets, so until the staging
+# host/credentials exist they are skipped (stub-until-configured, the same
+# stance every external service in this repo takes). Cloud-orchestrator
+# deployment is Phase 15 (blueprint §13.3).
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  build-push:
+    name: Build & push images (GHCR)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push api image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          target: api
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/fleetflow-api:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/fleetflow-api:latest
+      - name: Build & push worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          target: worker
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/fleetflow-worker:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/fleetflow-worker:latest
+      # Phase 15: pre-deploy migrations run as a k8s Job (deploy/production/k8s/
+      # migrate-job.yaml) — the same `prisma migrate deploy` the migrate-staging
+      # job runs from a runner, but hermetic inside the cluster with the app image.
+      - name: Build & push migrate image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          target: migrate
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/fleetflow-migrate:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/fleetflow-migrate:latest
+      - name: Build & push dashboard image
+        uses: docker/build-push-action@v6
+        with:
+          context: dashboard
+          file: dashboard/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/fleetflow-dashboard:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/fleetflow-dashboard:latest
+
+  migrate-staging:
+    name: Migrate staging DB (pre-deploy)
+    needs: build-push
+    if: ${{ secrets.STAGING_DATABASE_URL != '' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Prisma migrate deploy
+        run: npx prisma migrate deploy
+
+  deploy-staging:
+    name: Deploy staging (smoke + auto-rollback)
+    needs: [build-push, migrate-staging]
+    # Self-hosted runner co-located with the staging stack (deploy/staging/).
+    # Gated on a secret so the job is simply absent until staging is wired up.
+    if: ${{ secrets.STAGING_DEPLOY_SECRET != '' }}
+    runs-on: [self-hosted, staging]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Rolling deploy (smoke-tested, auto-rollback on failure)
+        env:
+          PROJECT: fleetflow-staging
+          REGISTRY: ghcr.io/${{ github.repository }}
+          IMAGE_TAG: ${{ github.sha }}
+          SMOKE_BASE_URL: ${{ secrets.STAGING_URL }}
+        run: bash deploy/staging/deploy.sh

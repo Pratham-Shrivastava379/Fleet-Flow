@@ -1,0 +1,32 @@
+# Phase 14 (blueprint §12.2 "dependency audit / Dependabot"). Weekly updates:
+# npm (backend + dashboard), gradle (android), and the GitHub Actions
+# themselves. Dependabot opens the PRs — CI (ci.yml) gates every one of them.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /dashboard
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # The dashboard dev toolchain (vite/vitest) carries known advisories that
+    # don't ship in the built SPA; Dependabot's version bumps are how that
+    # migration gets driven (see .github/README.md).
+    allow:
+      - dependency-type: direct
+
+  - package-ecosystem: gradle
+    directory: /android
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

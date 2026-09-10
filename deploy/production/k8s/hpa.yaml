@@ -1,0 +1,21 @@
+# Phase 15 — horizontal autoscaling for the stateless API (blueprint §14.2:
+# "scale by adding instances"; min 2 for HA per §13.3). Requires metrics-server.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fleetflow-api
+  namespace: fleetflow
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fleetflow-api
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

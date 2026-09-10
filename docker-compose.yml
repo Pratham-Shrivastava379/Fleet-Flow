@@ -1,0 +1,165 @@
+# FleetFlow local infrastructure (Phase 0) + full local stack (Phase 13).
+# Usage:
+#   docker compose up -d postgres redis          # infra only (Phase 0-12 dev)
+#   docker compose up -d                          # full stack: infra + api + worker
+#                                                #   + observability (Phase 13 §11/§13.1)
+#
+# Postgres+PostGIS is the target system of record (blueprint ADR-2); Redis backs
+# rate limiting, pub/sub and BullMQ from Phase 4 onward. The api/worker services
+# build from the multi-target backend Dockerfile (blueprint §13.2); Prometheus,
+# Grafana and Jaeger make up the Phase 13 observability stack (§11.2/§11.3) —
+# Grafana is pre-provisioned with a FleetFlow overview dashboard
+# (deploy/observability/grafana) showing API request rate/latency/error-rate and
+# per-queue BullMQ depth, which is the Phase 13 done-condition.
+#
+# NOTE: the backend Dockerfile sets NODE_ENV=production, so the API refuses to
+# boot with dev-looking JWT secrets — compose supplies non-dev dev secrets.
+# Swap these for secrets-manager values in a real deployment (Phase 15).
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: fleetflow-postgres
+    environment:
+      POSTGRES_USER: fleetflow
+      POSTGRES_PASSWORD: fleetflow
+      POSTGRES_DB: fleetflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleetflow -d fleetflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: fleetflow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      target: api
+    image: fleetflow-api:local
+    container_name: fleetflow-api
+    environment: &backend_env
+      NODE_ENV: production
+      DATABASE_URL: postgresql://fleetflow:fleetflow@postgres:5432/fleetflow?schema=public
+      REDIS_URL: redis://redis:6379
+      # Local dev secrets — MUST NOT contain "dev-" (config.js production guard).
+      JWT_ACCESS_SECRET: compose-access-secret-0123456789abcdef
+      JWT_REFRESH_SECRET: compose-refresh-secret-0123456789abcdef
+      WEB_REFRESH_COOKIE_SECURE: "false"
+      CORS_ORIGINS: http://localhost:5173
+      LOG_LEVEL: info
+      # Scrapes need this token (config.metricsToken, §4.2 "not public");
+      # prometheus.yml below sends it as a Bearer header.
+      METRICS_TOKEN: compose-metrics-token
+      # Export artifacts are written by the WORKER but downloaded via the API —
+      # separate container filesystems need a shared volume (exportdata below).
+      EXPORT_ARTIFACT_DIR: /app/data/exports
+      # Phase 13 tracing (§11.3): send traces to the local Jaeger collector.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: fleetflow-api
+      # sdk-node >= 0.222 defaults OTLP metrics export on when an OTLP endpoint
+      # is set; Jaeger has no /v1/metrics endpoint and our metrics already flow
+      # to Prometheus via /api/metrics + the worker exporter — so disable it.
+      OTEL_METRICS_EXPORTER: "none"
+    volumes:
+      - exportdata:/app/data/exports
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build:
+      context: ./backend
+      target: worker
+    image: fleetflow-worker:local
+    container_name: fleetflow-worker
+    environment:
+      <<: *backend_env
+      OTEL_SERVICE_NAME: fleetflow-worker
+    # Worker-process Prometheus exporter (§11.2) — separate scrape target from
+    # the API's /api/metrics; geofence-eval + notification latency live here.
+    volumes:
+      - exportdata:/app/data/exports
+    ports:
+      - "9091:9091"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: fleetflow-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - promdata:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      api:
+        condition: service_healthy
+      worker:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: fleetflow-grafana
+    environment:
+      # Local-only: anonymous viewer access so the provisioned dashboard can be
+      # opened at http://localhost:3001 without credentials. Remove in prod.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./deploy/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      # Dashboard JSONs are provisioned from this dir (see provisioning/dashboards/dashboards.yml)
+      - ./deploy/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: fleetflow-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      # OTLP/HTTP collector (backend traces), Jaeger UI.
+      - "4318:4318"
+      - "16686:16686"
+
+volumes:
+  pgdata:
+  redisdata:
+  promdata:
+  grafana-data:
+  exportdata:

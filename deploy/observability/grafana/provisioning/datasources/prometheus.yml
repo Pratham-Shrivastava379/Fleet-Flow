@@ -1,0 +1,13 @@
+# Grafana datasource auto-provisioning (Phase 13, §11.2).
+# Grafana reads /etc/grafana/provisioning on startup; this registers the local
+# Prometheus as the default datasource. Dashboards reference it by uid.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false

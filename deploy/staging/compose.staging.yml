@@ -1,0 +1,106 @@
+# FleetFlow STAGING stack (Phase 14, blueprint §13.4). Image-based variant of
+# the local compose stack — api/worker run the CD-published images instead of
+# local builds. Everything is parameterized so the same file deploys any image
+# tag (the git SHA) and rollback re-runs it with the previous tag.
+#
+# Target host: a docker host (self-hosted GitHub Actions runner labeled
+# `staging`). Secrets come from the environment / an env file (.env.staging —
+# see .env.staging.example); NOTHING secret is hard-coded here.
+#
+# Usage: see deploy.sh (rolling deploy + smoke + auto-rollback).
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fleetflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fleetflow}
+      POSTGRES_DB: ${POSTGRES_DB:-fleetflow}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - staging-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-fleetflow} -d ${POSTGRES_DB:-fleetflow}",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - staging-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ${REGISTRY:+$REGISTRY/}fleetflow-api:${IMAGE_TAG:-latest}
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fleetflow}:${POSTGRES_PASSWORD:-fleetflow}@postgres:5432/${POSTGRES_DB:-fleetflow}?schema=public
+      REDIS_URL: redis://redis:6379
+      # Non-dev secrets (config.js refuses dev-* under NODE_ENV=production).
+      # Override in .env.staging from your secrets manager.
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-staging-access-secret-0123456789abcdef}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-staging-refresh-secret-0123456789abcdef}
+      WEB_REFRESH_COOKIE_SECURE: ${WEB_REFRESH_COOKIE_SECURE:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://fleet.example.com}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      EXPORT_ARTIFACT_DIR: /app/data/exports
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      # api+worker are separate processes/filesystems: a shared volume lets the
+      # API download route read what the exports worker wrote.
+    volumes:
+      - staging-exportdata:/app/data/exports
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  worker:
+    image: ${REGISTRY:+$REGISTRY/}fleetflow-worker:${IMAGE_TAG:-latest}
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fleetflow}:${POSTGRES_PASSWORD:-fleetflow}@postgres:5432/${POSTGRES_DB:-fleetflow}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-staging-access-secret-0123456789abcdef}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-staging-refresh-secret-0123456789abcdef}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      WORKER_METRICS_PORT: ${WORKER_METRICS_PORT:-9091}
+      EXPORT_ARTIFACT_DIR: /app/data/exports
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    volumes:
+      - staging-exportdata:/app/data/exports
+    ports:
+      - "${WORKER_METRICS_HOST_PORT:-9091}:${WORKER_METRICS_PORT:-9091}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  staging-pgdata:
+  staging-redisdata:
+  staging-exportdata:

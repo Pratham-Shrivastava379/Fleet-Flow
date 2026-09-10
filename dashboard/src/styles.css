@@ -1,0 +1,597 @@
+:root {
+  --bg: #0b132b;
+  --panel: #1c2541;
+  --panel-2: #16213e;
+  --text: #e0e1dd;
+  --muted: #778da9;
+  --accent: #2ec4b6;
+  --danger: #e71d36;
+  --warn: #ffd60a;
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 12px;
+}
+
+/* ---- auth ---- */
+.auth-loading,
+.auth-denied {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  color: var(--muted);
+}
+.login-wrap {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+.login-card {
+  background: var(--panel);
+  padding: 32px;
+  border-radius: 12px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.login-card h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.login-card p {
+  margin: 0 0 8px;
+}
+.login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.login-card input {
+  background: var(--panel-2);
+  border: 1px solid #3a506b;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+}
+.login-card button {
+  background: var(--accent);
+  color: #06232a;
+  font-weight: 600;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px;
+  cursor: pointer;
+}
+.login-card button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.login-error {
+  background: rgba(231, 29, 54, 0.15);
+  border: 1px solid var(--danger);
+  color: #ff8fa3;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+/* ---- fleet screen ---- */
+.fleet-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: var(--panel);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.topbar button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid #3a506b;
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.ws-badge {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--panel-2);
+}
+.ws-live {
+  color: var(--accent);
+}
+.ws-reconnecting,
+.ws-connecting {
+  color: var(--warn);
+}
+.ws-closed {
+  color: var(--muted);
+}
+
+.fleet-main {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+  padding: 14px 18px;
+  min-height: 0;
+  flex: 1;
+}
+.map-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.map-panel > div:first-child {
+  flex: 1;
+  min-height: 0;
+}
+.map-loading {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--muted);
+}
+.map-footnote {
+  padding-top: 6px;
+  font-size: 12px;
+}
+
+.vehicle-list {
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 14px;
+  overflow-y: auto;
+}
+.vehicle-list h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+.vehicle-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vehicle-list li {
+  background: var(--panel-2);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.vehicle-list li.selected {
+  border-color: var(--warn);
+}
+.v-plate {
+  font-weight: 600;
+}
+.live-dot {
+  color: var(--accent);
+  font-size: 11px;
+}
+.vehicle-detail {
+  margin-top: 14px;
+  background: var(--panel-2);
+  border-radius: 10px;
+  padding: 12px;
+}
+.vehicle-detail h3 {
+  margin: 0 0 6px;
+}
+.vehicle-detail p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+.vehicle-detail button {
+  margin-top: 8px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid #3a506b;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid #2a3a55;
+  flex-wrap: wrap;
+}
+.brand {
+  font-weight: 700;
+  font-size: 15px;
+}
+.topnav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.topnav button {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.topnav button:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+.topnav button.tab-active {
+  background: var(--panel-2);
+  color: var(--accent);
+  border-color: #2a3a55;
+}
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-content {
+  padding: 18px 20px;
+  flex: 1;
+}
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1100px;
+}
+.screen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.screen-head h1 {
+  margin: 12px 0;
+  font-size: 20px;
+}
+.filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.filters select,
+.filters input {
+  background: var(--panel-2);
+  border: 1px solid #3a506b;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.table-card {
+  background: var(--panel);
+  border: 1px solid #2a3a55;
+  border-radius: 12px;
+  padding: 6px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+}
+.row:hover {
+  background: var(--panel-2);
+}
+.row-main {
+  flex: 1;
+  min-width: 0;
+}
+.row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.row-stats {
+  display: flex;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.row-detail {
+  margin-top: 4px;
+  font-size: 12px;
+}
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-weight: 600;
+}
+.badge-open {
+  background: rgba(231, 29, 54, 0.2);
+  color: #ff8fa3;
+}
+.badge-ack {
+  background: rgba(255, 214, 10, 0.18);
+  color: #ffe066;
+}
+.badge-resolved,
+.badge-ok,
+.badge-done {
+  background: rgba(46, 196, 182, 0.18);
+  color: var(--accent);
+}
+.badge-running {
+  background: rgba(255, 214, 10, 0.18);
+  color: #ffe066;
+}
+.badge-failed {
+  background: rgba(231, 29, 54, 0.2);
+  color: #ff8fa3;
+}
+.row-actions button {
+  background: var(--accent);
+  color: #06121f;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.row-actions button.danger {
+  background: var(--danger);
+  color: #fff;
+}
+.row-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.row-actions select {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid #3a506b;
+  border-radius: 8px;
+  padding: 5px 6px;
+  font-size: 12px;
+}
+.inline-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.inline-form input {
+  background: var(--panel-2);
+  border: 1px solid #3a506b;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  flex: 1;
+  min-width: 180px;
+}
+.inline-form button {
+  background: var(--accent);
+  color: #06121f;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+.fleet-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 2px;
+}
+.geofence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1fr;
+  gap: 14px;
+}
+.geofence-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.geofence-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.geofence-form label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.geofence-form input {
+  background: var(--panel-2);
+  border: 1px solid #3a506b;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 13px;
+}
+.geofence-form button {
+  background: var(--accent);
+  color: #06121f;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid #2a3a55;
+  border-radius: 12px;
+  padding: 14px;
+}
+.geofence-map {
+  background: var(--panel);
+  border: 1px solid #2a3a55;
+  border-radius: 12px;
+  padding: 8px;
+}
+.check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text);
+}
+.small-check {
+  font-size: 12px;
+  color: var(--muted);
+}
+.exports-panel {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.exports-panel h2 {
+  margin: 10px 0 4px;
+  font-size: 16px;
+}
+@media (max-width: 900px) {
+  .fleet-screen {
+    height: auto;
+    min-height: 100vh;
+  }
+  .fleet-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .map-panel {
+    min-height: 420px;
+  }
+  .geofence-grid {
+    grid-template-columns: 1fr;
+  }
+  .row {
+    flex-wrap: wrap;
+  }
+}
+.banner-error {
+  background: rgba(231, 29, 54, 0.15);
+  border: 1px solid var(--danger);
+  color: #ff8fa3;
+  border-radius: 8px;
+  margin: 10px 18px 0;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* Per-fence history panel (§7.2 item 5). */
+.row-actions button.ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid #3a506b;
+}
+.history-panel {
+  margin-top: 12px;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 10px;
+  flex-wrap: wrap;
+}
+.panel-head .filters button {
+  background: var(--accent);
+  color: #06121f;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.badge.evt-enter {
+  background: rgba(46, 196, 182, 0.18);
+  color: var(--accent);
+}
+.badge.evt-exit {
+  background: rgba(231, 29, 54, 0.2);
+  color: #ff8fa3;
+}
+.pager {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+}
+.pager button {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid #3a506b;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.pager button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

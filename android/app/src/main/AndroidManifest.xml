@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".FleetApp"
+        android:label="FleetFlow"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.FleetFlow"
+        android:usesCleartextTraffic="true">
+        <!-- usesCleartextTraffic is for the local dev backend (10.0.2.2). Remove in release;
+             production API is HTTPS-only. -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Foreground service for continuous trip tracking (location type). -->
+        <service
+            android:name=".tracking.TrackingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <!-- FCM push receipt (blueprint §10): token-refresh upload + alert
+             notification display. Dormant until google-services.json/Firebase
+             are configured — the service never fires without a FirebaseApp
+             (§5.6 stub-until-configured). -->
+        <service
+            android:name=".push.FcmMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- FCM fallback channel for background notification messages; created
+             eagerly in FleetApp.onCreate (id must match FcmMessagingService). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="fleetflow_alerts" />
+
+        <!-- Phase 13 (§11.4): Sentry is initialized manually in FleetApp.onCreate,
+             gated on the build-time SENTRY_DSN (local.properties / CI secret).
+             Auto-init is disabled so the SDK's SentryInitProvider (a ContentProvider
+             that runs BEFORE Application.onCreate) never calls SentryAndroid.init
+             without a DSN — that path throws "DSN is required" and crashes startup
+             on any build without a configured DSN (stub-until-configured). -->
+        <meta-data
+            android:name="io.sentry.auto-init"
+            android:value="false" />
+
+        <!-- Maps -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${googleMapsKey}" />
+
+        <!-- FCM: FmsMessageService is registered once firebase plugin + google-services.json
+        are added. -->
+    </application>
+</manifest>

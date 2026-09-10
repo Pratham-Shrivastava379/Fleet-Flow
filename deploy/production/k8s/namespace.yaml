@@ -1,0 +1,8 @@
+# Phase 15 (blueprint §13.3) — production namespace. Cloud-agnostic k8s.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fleetflow
+  labels:
+    app.kubernetes.io/part-of: fleetflow
+    app.kubernetes.io/managed-by: kustomize-or-kubectl

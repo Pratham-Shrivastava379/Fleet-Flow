@@ -1,0 +1,90 @@
+# Phase 15 — REST API + WebSocket gateway (co-located per blueprint ADR-1 /
+# §2.3 "Phase 1: co-located"). Stateless; scale horizontally (HPA below).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetflow-api
+  namespace: fleetflow
+  labels:
+    app: fleetflow-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fleetflow-api
+  template:
+    metadata:
+      labels:
+        app: fleetflow-api
+    spec:
+      containers:
+        - name: api
+          # Tag with the git SHA in real deploys (cd.yml pushes ${{ github.sha }}
+          # tags). Replace YOUR-ORG with the GHCR owner.
+          image: ghcr.io/YOUR-ORG/fleetflow-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: fleetflow-config
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "fleetflow-api"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: REDIS_URL
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: JWT_ACCESS_SECRET
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: JWT_REFRESH_SECRET
+            - name: METRICS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: METRICS_TOKEN
+          # §4.2 health contract {ok, db, redis, ts} — the load balancer routes
+          # around an unhealthy pod via readiness; liveness restarts the pod.
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          # Export artifacts shared with the worker pod (see storage.yaml).
+          volumeMounts:
+            - name: exportdata
+              mountPath: /app/data/exports
+      volumes:
+        - name: exportdata
+          persistentVolumeClaim:
+            claimName: fleetflow-exportdata

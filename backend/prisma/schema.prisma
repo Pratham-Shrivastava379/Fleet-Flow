@@ -1,0 +1,388 @@
+// FleetFlow schema — PostgreSQL + PostGIS (Phase 1, blueprint ADR-2).
+// Geospatial: coordinates are Floats for the Prisma-facing API; a stored
+// generated `geog geography(Point,4326)` column is added by raw SQL migration
+// (prisma can't model geography natively) and used by ST_DWithin queries.
+// location_pings partitioning arrives in Phase 4 (retention/partition job).
+
+generator client {
+  provider = "prisma-client-js"
+  // Explicit binary targets (Phase 13, §13.2 container image): dev machines run
+  // the native engine; the node:22-alpine runtime image needs the musl/openssl-3
+  // build (default musl probing on Alpine resolves to openssl-1.1, which is not
+  // present on modern Alpine). Config-only — no migration involved.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FLEET_MANAGER
+  DRIVER
+}
+
+model User {
+  id                  Int                      @id @default(autoincrement())
+  email               String                   @unique
+  passwordHash        String
+  name                String
+  role                Role                     @default(DRIVER)
+  createdAt           DateTime                 @default(now())
+  driverTrips         Trip[]                   @relation("DriverTrips")
+  refreshTokens       RefreshToken[]
+  auditLogs           AuditLog[]
+  passwordResetTokens PasswordResetToken[]
+  invitesSent         Invite[]
+  notificationPrefs   NotificationPreference[]
+  deviceTokens        DeviceToken[]
+  fleetLastPositions  FleetLastPosition[]
+  // Phase 12 (§7.2 item 4): a vehicle's default driver; null until assigned.
+  defaultedVehicles   Vehicle[]                @relation("DefaultDriver")
+  // Phase 12 (§6.2): CSV exports requested by this user.
+  exportJobs          ExportJob[]
+  // Alerts this user raised / triaged (Phase 12 triage metadata, §6.2).
+  alertsRaised        Alert[]                  @relation("AlertRaisedBy")
+  alertsAcknowledged  Alert[]                  @relation("AlertAcknowledgedBy")
+  alertsResolved      Alert[]                  @relation("AlertResolvedBy")
+  // Phase 12 (§5.1): present only while the account is deactivated.
+  statusFlag          UserStatus?
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId  String // all rotations of one login session share a family; replay revokes the family
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+enum AuditAction {
+  INVITE_SENT
+  INVITE_ACCEPTED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+  ROLE_CHANGED
+  TRIP_REAPED
+  // Phase 12 (§7.2 items 6–7): user administration + export lifecycle.
+  USER_CREATED
+  USER_UPDATED
+  USER_ROLE_CHANGED
+  USER_DEACTIVATED
+  USER_REACTIVATED
+  EXPORT_REQUESTED
+  EXPORT_COMPLETED
+  EXPORT_FAILED
+  // Phase 12 (§11.5: alert status changes are audit-worthy triage events).
+  ALERT_ACKNOWLEDGED
+  ALERT_RESOLVED
+}
+
+model AuditLog {
+  id        Int         @id @default(autoincrement())
+  actorId   Int? // user performing the action (null for anonymous flows like reset request)
+  actor     User?       @relation(fields: [actorId], references: [id])
+  action    AuditAction
+  target    String      @default("") // e.g. "user:42", "invite:88", "email:x@y.z"
+  detail    String      @default("")
+  createdAt DateTime    @default(now())
+
+  @@index([action, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+enum InviteRole {
+  FLEET_MANAGER
+  ADMIN
+}
+
+model Invite {
+  id         Int        @id @default(autoincrement())
+  email      String
+  role       InviteRole
+  tokenHash  String     @unique
+  invitedBy  Int
+  inviter    User       @relation(fields: [invitedBy], references: [id])
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@index([email])
+}
+
+model Vehicle {
+  id                Int                @id @default(autoincrement())
+  plate             String             @unique
+  model             String
+  status            VehicleStatus      @default(ACTIVE)
+  deletedAt         DateTime?
+  // Phase 12 (§7.2 item 4): optional default driver assignment.
+  defaultDriverId   Int?
+  defaultDriver     User?              @relation("DefaultDriver", fields: [defaultDriverId], references: [id])
+  maintenanceNote   String?
+  createdAt         DateTime           @default(now())
+  trips             Trip[]
+  fleetLastPosition FleetLastPosition?
+  geofenceEvents    GeofenceEvent[]
+}
+
+enum VehicleStatus {
+  ACTIVE
+  IN_MAINTENANCE
+  RETIRED
+}
+
+enum TripStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Trip {
+  id                 Int                 @id @default(autoincrement())
+  driverId           Int
+  driver             User                @relation("DriverTrips", fields: [driverId], references: [id])
+  vehicleId          Int
+  vehicle            Vehicle             @relation(fields: [vehicleId], references: [id])
+  status             TripStatus          @default(ACTIVE)
+  startedAt          DateTime            @default(now())
+  finishedAt         DateTime?
+  // Trip stats, computed at finish via PostGIS from the ping set (Phase 3).
+  distanceKm         Float?
+  avgSpeedKmh        Float?
+  maxSpeedKmh        Float?
+  durationSeconds    Int?
+  pings              LocationPing[]
+  idempotencyKeys    IdempotencyKey[]
+  alerts             Alert[]
+  geofenceEvents     GeofenceEvent[]
+  fleetLastPositions FleetLastPosition[]
+
+  @@index([driverId, status])
+  @@index([status, startedAt])
+}
+
+model LocationPing {
+  id             Int      @id @default(autoincrement())
+  tripId         Int
+  trip           Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  idempotencyKey String // dedup is enforced by the IdempotencyKey table (see note below)
+  lat            Float
+  lng            Float
+  speedKmh       Float    @default(0)
+  headingDeg     Float    @default(0)
+  accuracyM      Float    @default(0)
+  recordedAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([tripId, recordedAt])
+}
+
+// NOTE: `location_pings` is a monthly RANGE(createdAt)-partitioned table (raw
+// SQL migration `phase4_partitioning`). Postgres requires any unique/PK column
+// set to include the partition key, so a global unique on `idempotencyKey`
+// cannot live on that table. To preserve the offline-sync dedup pattern
+// (blueprint §1.1) we keep the unique DB constraint here instead: addPing gates
+// on this table, so a replayed idempotencyKey is deduplicated before the ping
+// row is written. The idempotencyKey column above is retained on the ping row
+// for observability but is NOT unique.
+model IdempotencyKey {
+  id             Int      @id @default(autoincrement())
+  idempotencyKey String   @unique
+  tripId         Int
+  trip           Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@index([tripId])
+}
+
+enum AlertType {
+  SOS
+  HARSH_BRAKING
+  OVERSPEED
+  GEOFENCE_ENTER
+  GEOFENCE_EXIT
+  CRASH_DETECTED
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Alert {
+  id               Int         @id @default(autoincrement())
+  tripId           Int?
+  trip             Trip?       @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  type             AlertType
+  status           AlertStatus @default(OPEN)
+  lat              Float
+  lng              Float
+  detail           String      @default("")
+  // Phase 12 (§6.2 target shape): triage metadata so the Alerts inbox can show
+  // who acknowledged/resolved and when.
+  raisedById       Int?
+  raisedBy         User?       @relation("AlertRaisedBy", fields: [raisedById], references: [id])
+  acknowledgedById Int?
+  acknowledgedBy   User?       @relation("AlertAcknowledgedBy", fields: [acknowledgedById], references: [id])
+  acknowledgedAt   DateTime?
+  resolvedById     Int?
+  resolvedBy       User?       @relation("AlertResolvedBy", fields: [resolvedById], references: [id])
+  resolvedAt       DateTime?
+  createdAt        DateTime    @default(now())
+
+  @@index([status, createdAt])
+}
+
+model Geofence {
+  id             Int             @id @default(autoincrement())
+  name           String
+  centerLat      Float
+  centerLng      Float
+  radiusM        Float
+  active         Boolean         @default(true)
+  // Phase 5: when true, crossing this fence creates a GEOFENCE_ENTER/EXIT
+  // Alert in addition to the always-recorded GeofenceEvent (§6.3 — not every
+  // crossing should page a manager).
+  alertOnEnter   Boolean         @default(false)
+  alertOnExit    Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  geofenceEvents GeofenceEvent[]
+}
+
+// Per-user, per-alert-type push preference. Schema-first (Phase 3); the
+// notification dispatch logic that consumes it lands in Phase 7.
+model NotificationPreference {
+  id      Int       @id @default(autoincrement())
+  userId  Int
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    AlertType
+  enabled Boolean   @default(true)
+
+  @@unique([userId, type])
+  @@index([userId])
+}
+
+// Push device token registered by the mobile app for FCM. Schema-first (Phase 3);
+// registration endpoint + send logic land in Phase 7.
+model DeviceToken {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String    @unique
+  platform   String    @default("ANDROID")
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  @@index([userId])
+}
+
+enum GeofenceEventType {
+  ENTER
+  EXIT
+}
+
+enum ExportJobType {
+  TRIPS_CSV
+  ALERTS_CSV
+  GEOFENCE_HISTORY
+}
+
+enum ExportJobStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+// Phase 12 (§6.2): async report/export jobs kicked off from the web dashboard.
+// REST request path only enqueues; the exports BullMQ worker generates the CSV
+// and stores it (S3-compatible upload + presigned URL in production — the
+// `deliver` seam in src/services/exportService.js; local file path in dev).
+model ExportJob {
+  id          Int             @id @default(autoincrement())
+  requestedBy Int
+  requester   User            @relation(fields: [requestedBy], references: [id], onDelete: Cascade)
+  type        ExportJobType
+  status      ExportJobStatus @default(PENDING)
+  params      Json            @default("{}")
+  resultUrl   String?
+  error       String?
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  @@index([requestedBy, createdAt])
+}
+
+// Audit trail of geofence crossings (Phase 5, blueprint §6.2/§8.3). Written by
+// the server-side geofence-eval job on an inside/outside TRANSITION only —
+// never per ping. Separate from Alert so unflagged fences still leave a full
+// compliance trail without polluting the alert inbox (§6.3).
+model GeofenceEvent {
+  id         Int               @id @default(autoincrement())
+  geofenceId Int
+  geofence   Geofence          @relation(fields: [geofenceId], references: [id], onDelete: Cascade)
+  vehicleId  Int
+  vehicle    Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tripId     Int?
+  trip       Trip?             @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  eventType  GeofenceEventType
+  occurredAt DateTime
+  createdAt  DateTime          @default(now())
+
+  @@index([geofenceId, occurredAt])
+  @@index([vehicleId, occurredAt])
+}
+
+// Materialized one-row-per-vehicle last known position (blueprint §6.2/§6.3).
+// Upserted on every ping write so live-map reads are O(1) instead of a
+// DISTINCT ON over the fast-growing partitioned LocationPing table. The row
+// is removed when its trip finishes (rows exist only for vehicles on an
+// active trip). `geo` is a Prisma-invisible PostGIS stored-generated column
+// added by the phase5 migration (same pattern as Geofence.center).
+model FleetLastPosition {
+  vehicleId  Int      @id
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  tripId     Int
+  trip       Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  driverId   Int
+  driver     User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  lat        Float
+  lng        Float
+  speedKmh   Float    @default(0)
+  headingDeg Float    @default(0)
+  recordedAt DateTime
+  updatedAt  DateTime @updatedAt
+}
+
+// Phase 12 (§5.1/§7.2 item 4): explicit deactivation. A deactivated user's
+// sessions are revoked and login is refused. This is a separate column (not
+// role mangling) so the original role is preserved and the audit trail shows
+// USER_DEACTIVATED / USER_REACTIVATED actions.
+model UserStatus {
+  userId        Int      @id
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deactivatedAt DateTime
+  reason        String   @default("")
+}

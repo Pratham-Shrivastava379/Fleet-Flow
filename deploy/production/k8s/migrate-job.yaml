@@ -1,0 +1,26 @@
+# Phase 15 — pre-deploy schema migration (blueprint §13.4: `prisma migrate
+# deploy`, NEVER `migrate dev`). Run BEFORE rolling the API image forward:
+#   kubectl apply -f migrate-job.yaml   (or kubectl create job --from=cronjob)
+# The migrate image layers the pinned prisma CLI over the runtime base
+# (backend/Dockerfile target `migrate`, pushed by cd.yml alongside api/worker).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fleetflow-migrate
+  namespace: fleetflow
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/YOUR-ORG/fleetflow-migrate:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetflow-secrets
+                  key: DATABASE_URL

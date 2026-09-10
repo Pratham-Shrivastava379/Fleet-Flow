@@ -1,0 +1,10 @@
+node_modules
+tests
+scripts
+!scripts/bootstrap-admin.js
+*.log
+*.out
+.env
+.git
+.gitignore
+dev.db

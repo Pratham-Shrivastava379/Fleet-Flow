@@ -1,0 +1,15 @@
+# Grafana dashboard auto-provisioning (Phase 13).
+# Loads every JSON dashboard from /var/lib/grafana/dashboards (mounted from
+# ./deploy/observability/grafana/dashboards). FleetFlow's overview dashboard
+# is provisioned here — the Phase 13 done-condition's proving ground.
+apiVersion: 1
+
+providers:
+  - name: fleetflow
+    orgId: 1
+    folder: FleetFlow
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards
