@@ -8,7 +8,7 @@ The project is designed as a production-style engineering portfolio: it includes
 
 <!-- Replace the line below with your public YouTube, Google Drive, Loom, or GitHub Release link. -->
 
-**Demo video:** _Coming soon — recorded walkthrough will be added here._
+**Demo video:** https://youtube.com/shorts/uELxEp4fhrw
 
 ## Highlights
 
@@ -42,7 +42,6 @@ Prometheus metrics ---------------------------------> Grafana
 | Express API | Authentication, RBAC, validation, business workflows, REST contracts, and WebSocket authorization |
 | PostgreSQL/PostGIS | Durable fleet data, trip history, location partitions, statistics, geospatial queries, and audit records |
 | Redis | Shared rate limiting, cross-instance pub/sub, and BullMQ queue transport |
-| Worker | Geofence evaluation, notifications, CSV exports, retention, stale-trip recovery, and partition maintenance |
 
 The backend is a modular monolith: routes validate and authorize requests, services implement business rules, and Prisma provides data access. PostgreSQL remains the source of truth; WebSocket messages accelerate UI updates but never replace REST reconciliation.
 
