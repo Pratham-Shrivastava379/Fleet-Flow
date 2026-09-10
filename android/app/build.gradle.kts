@@ -158,7 +158,7 @@ dependencies {
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     // Location & background work
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.gms:play-services-location:21.4.0")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // Maps
