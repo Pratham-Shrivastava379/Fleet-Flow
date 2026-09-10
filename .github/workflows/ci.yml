@@ -84,7 +84,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Unit tests + Android lint
         # Instrumented (emulator) tests are NOT run here per-PR — they run in the
         # separate android-instrumentation.yml workflow (manual dispatch or
