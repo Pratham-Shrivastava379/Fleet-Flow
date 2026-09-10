@@ -6,5 +6,5 @@ plugins {
     // Phase 8: KSP (Room compiler) — explicitly deferred in MVP, now justified (§3.2)
     id("com.google.devtools.ksp") version "2.0.20-1.0.25" apply false
     // Phase 8: Hilt DI — replaces ServiceLocator (§3.2)
-    id("com.google.dagger.hilt.android") version "2.52" apply false
+    id("com.google.dagger.hilt.android") version "2.60.1" apply false
 }
