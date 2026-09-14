@@ -23,7 +23,7 @@ The project is designed as a production-style engineering portfolio: it includes
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TB
     Driver([Driver]) --> Android[Android app]
     Operations([Manager / Admin]) --> Dashboard[React dashboard]
 
@@ -43,6 +43,17 @@ flowchart LR
 
     API -. metrics and traces .-> Observability[Prometheus · Grafana · Jaeger]
     Worker -. metrics and traces .-> Observability
+
+    classDef actor fill:#F8FAFC,stroke:#334155,stroke-width:2px,color:#0F172A
+    classDef client fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2px,color:#0F172A
+    classDef service fill:#DCFCE7,stroke:#15803D,stroke-width:2px,color:#0F172A
+    classDef data fill:#F3E8FF,stroke:#7E22CE,stroke-width:2px,color:#0F172A
+    classDef observe fill:#FEF3C7,stroke:#B45309,stroke-width:2px,color:#0F172A
+    class Driver,Operations actor
+    class Android,Dashboard client
+    class API,Worker service
+    class Database,Redis,Queues data
+    class Observability observe
 ```
 
 ### Component boundaries
@@ -60,7 +71,7 @@ The backend is a modular monolith: routes validate and authorize requests, servi
 ### Offline tracking and synchronization
 
 ```mermaid
-flowchart LR
+flowchart TB
     GPS[Fused Location Provider] --> Service[Android foreground service]
     Service --> Room[(Room offline queue)]
     Room --> Sync{Network available?}
@@ -69,6 +80,15 @@ flowchart LR
     Retry --> Sync
     Batch --> API[Express API]
     API --> Database[(PostgreSQL + PostGIS)]
+
+    classDef source fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2px,color:#0F172A
+    classDef mobile fill:#DCFCE7,stroke:#15803D,stroke-width:2px,color:#0F172A
+    classDef decision fill:#FEF3C7,stroke:#B45309,stroke-width:2px,color:#0F172A
+    classDef backend fill:#F3E8FF,stroke:#7E22CE,stroke-width:2px,color:#0F172A
+    class GPS source
+    class Service,Room,Retry mobile
+    class Sync decision
+    class Batch,API,Database backend
 ```
 
 Each ping is stored locally before upload and carries a client-generated UUID. The backend records that key in a unique deduplication table, making retries safe when a mobile connection fails after the server has already accepted a request. Batches are sorted by their original recording time so delayed uploads cannot scramble the route. Successful and duplicate points are removed from Room; failed points remain annotated for retry.
@@ -76,13 +96,20 @@ Each ping is stored locally before upload and carries a client-generated UUID. T
 ### Real-time and background processing
 
 ```mermaid
-flowchart LR
+flowchart TB
     Request[REST write] --> Commit[(PostgreSQL commit)]
     Commit --> Event[Redis fleet event]
     Event --> Clients[Authorized WebSocket clients]
     Commit --> Queue[BullMQ job]
     Queue --> Worker[Worker]
     Worker --> Result[Geofence · notification · export result]
+
+    classDef request fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2px,color:#0F172A
+    classDef durable fill:#F3E8FF,stroke:#7E22CE,stroke-width:2px,color:#0F172A
+    classDef async fill:#DCFCE7,stroke:#15803D,stroke-width:2px,color:#0F172A
+    class Request,Clients request
+    class Commit durable
+    class Event,Queue,Worker,Result async
 ```
 
 WebSocket subscriptions are role-scoped to fleet, driver, or vehicle topics and are revalidated against the database when authority changes. Redis pub/sub carries events across API instances. Five BullMQ queues isolate geofence evaluation, notifications, exports, retention, and partition maintenance from request latency.
