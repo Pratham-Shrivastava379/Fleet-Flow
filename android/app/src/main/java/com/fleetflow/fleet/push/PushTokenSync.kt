@@ -22,8 +22,8 @@ interface PushGraph {
 }
 
 /**
- * Best-effort FCM registration-token sync (blueprint §10 / Phase-7 Android half
- * — device-token upload to POST /api/users/me/device-tokens).
+ * Best-effort FCM registration-token sync through
+ * POST /api/users/me/device-tokens.
  *
  * Fire-and-forget and STRICTLY fail-open: FCM is stub-until-configured on
  * Android exactly as on the backend. Without google-services resources

@@ -58,7 +58,7 @@ export async function deleteGeofence(id) {
 }
 
 /**
- * GET /api/geofences/:id/history (blueprint §4.2): paginated enter/exit audit
+ * GET /api/geofences/:id/history: paginated enter/exit audit
  * trail for one fence — "which vehicles entered/exited, for compliance
  * reporting". Fence + vehicle/driver context are included so the dashboard
  * can render the history without a second lookup. A fence that was soft-OFF'd
@@ -136,16 +136,16 @@ export async function checkGeofences(lat, lng) {
 }
 
 /**
- * Server-authoritative geofence evaluation for one ping (Phase 5, blueprint
- * §8.3). Runs in the geofence-eval WORKER process — never inline in the ping
+ * Server-authoritative geofence evaluation for one ping. Runs in the
+ * geofence-eval WORKER process — never inline in the ping
  * write path — and is deliberately idempotent:
  *
  *  1. Find the active fences containing the point (PostGIS ST_DWithin on the
  *     stored generated `center` geography column, GIST-indexed).
  *  2. Reconstruct the vehicle's last-known inside/outside state from its
  *     latest GeofenceEvent per fence (DB-authoritative: survives restarts and
- *     Redis loss; the blueprint's Redis/FleetLastPosition cache options are
- *     renderable on top of this but not needed for correctness).
+ *     Redis loss; Redis/FleetLastPosition caches can be layered on top but are
+ *     not needed for correctness).
  *  3. On a TRANSITION only (inside→outside, outside→inside) write a
  *     GeofenceEvent — never one per ping while inside a fence — and, when the
  *     fence's alertOnEnter/alertOnExit flag says so, also create an Alert.

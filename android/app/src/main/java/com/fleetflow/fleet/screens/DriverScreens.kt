@@ -493,7 +493,7 @@ fun ProfileScreen(vm: ProfileViewModel = hiltViewModel(), onLoggedOut: () -> Uni
                 }
             }
 
-            // §3.3 Profile — notification preferences (blueprint §10.2). Per-
+            // §3.3 Profile — notification preferences. Per-
             // alert-type push toggles synced to PATCH /users/me/notification-prefs.
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -518,8 +518,8 @@ fun ProfileScreen(vm: ProfileViewModel = hiltViewModel(), onLoggedOut: () -> Uni
                 }
             }
 
-            // §3.3 Profile — permission status panel (blueprint §3.4 explicit
-            // states): location + notifications are requestable here; background
+            // Permission status panel: location + notifications are requestable
+            // here; background
             // location is requested only right before a trip that needs it.
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

@@ -1,7 +1,7 @@
 /**
  * Redis-backed sliding-window rate limiter (per IP + route bucket), replacing
  * the Phase 0 in-memory map so limits are SHARED across horizontally-scaled API
- * instances (blueprint §5.6 / ADR-1). Uses a Lua script (atomic) over a Redis
+ * instances. Uses a Lua script (atomic) over a Redis
  * sorted set; the oldest timestamp stays warm for an accurate Retry-After.
  * On Redis failure the limiter FAILS OPEN with a logged warning (§14.3), so an
  * outage degrades to "no rate limiting" rather than "nobody can log in".

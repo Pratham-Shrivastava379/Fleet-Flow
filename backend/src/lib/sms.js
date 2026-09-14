@@ -4,7 +4,7 @@ import { getContextLogger } from "./logger.js";
 const log = getContextLogger({ module: "sms" });
 
 /**
- * SOS SMS fallback (Phase 7, blueprint §10.1/§8.4). Twilio REST API via fetch —
+ * SOS SMS fallback. Twilio REST API via fetch —
  * no SDK dependency. STRICTLY feature-flagged off by default (§512: "the system
  * must function fully without SMS configured"): it only fires when
  * SMS_SOS_ENABLED=true AND Twilio credentials are present. Sends to a single

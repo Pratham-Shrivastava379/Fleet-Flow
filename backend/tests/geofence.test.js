@@ -1,6 +1,5 @@
 /**
- * Phase 5 — server-authoritative geofence evaluation tests (blueprint §8.3
- * done-conditions).
+ * Server-authoritative geofence evaluation tests.
  *
  * 1. A synthetic drive across a geofence produces exactly ONE `ENTER` and ONE
  *    `EXIT` GeofenceEvent — not one per ping (repeated pings inside the fence

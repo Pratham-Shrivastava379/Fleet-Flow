@@ -80,7 +80,7 @@ router.post("/:tripId/pings", validate(pingSchema), async (req, res, next) => {
   }
 });
 
-// Phase 10 (blueprint §3.6/§4.2): batch offline sync — up to MAX_PING_BATCH
+// Phase 10: batch offline sync — up to MAX_PING_BATCH
 // pings per call, per-item idempotency, one geofence-eval job + one
 // location_batch WS event for the whole request.
 router.post("/:tripId/pings/batch", validate(pingBatchSchema), async (req, res, next) => {

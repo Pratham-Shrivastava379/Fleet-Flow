@@ -9,7 +9,7 @@ import * as audit from "../services/auditService.js";
 import { getContextLogger } from "../lib/logger.js";
 
 /**
- * Phase 12 (blueprint §4.2/§7.2 item 3/§6.2): async CSV exports.
+ * Phase 12: async CSV exports.
  *
  * `POST /` enqueues an `exports` BullMQ job and returns 202 with the job row —
  * generation never runs on the request path (§4.1: "the REST layer stays

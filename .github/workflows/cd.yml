@@ -1,4 +1,4 @@
-# Phase 14 (blueprint §13.4): CD. Merge to `main` on green CI (branch
+# Phase 14: CD. Merge to `main` on green CI (branch
 # protection) builds & pushes the api/worker/dashboard images to GHCR (tagged
 # with the git SHA), runs `prisma migrate deploy` against the staging database
 # as a pre-deploy step (never `migrate dev`), then rolls the staging stack
@@ -11,7 +11,7 @@
 # local compose stack. The jobs are gated on secrets, so until the staging
 # host/credentials exist they are skipped (stub-until-configured, the same
 # stance every external service in this repo takes). Cloud-orchestrator
-# deployment is Phase 15 (blueprint §13.3).
+# deployment is Phase 15.
 name: CD
 
 on:
@@ -59,9 +59,8 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/fleetflow-worker:${{ github.sha }}
             ghcr.io/${{ github.repository }}/fleetflow-worker:latest
-      # Phase 15: pre-deploy migrations run as a k8s Job (deploy/production/k8s/
-      # migrate-job.yaml) — the same `prisma migrate deploy` the migrate-staging
-      # job runs from a runner, but hermetic inside the cluster with the app image.
+      # Keep migrations in a dedicated image so deployment environments can run
+      # the same `prisma migrate deploy` command as the staging workflow.
       - name: Build & push migrate image
         uses: docker/build-push-action@v6
         with:

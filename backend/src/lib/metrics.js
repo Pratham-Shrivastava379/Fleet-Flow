@@ -4,7 +4,7 @@ import { prisma } from "../prisma.js";
 import { partitionQueue, retentionQueue, geofenceEvalQueue, notificationsQueue, exportsQueue } from "../jobs/queues.js";
 
 /**
- * Phase 13 metrics (blueprint §11.2). All process metrics are registered on
+ * Phase 13 metrics. All process metrics are registered on
  * ONE explicit registry and served in Prometheus exposition format from:
  *  - the API process at GET /api/metrics (token-gated, §4.2), and
  *  - the worker process at GET :9091/metrics via startWorkerMetricsServer()

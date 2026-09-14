@@ -16,7 +16,7 @@ import config from "../config.js";
 
 const router = Router();
 
-/** True when the caller is a browser SPA (blueprint §5.4) — switch refresh-token
+/** True when the caller is a browser SPA — switch refresh-token
  *  delivery from JSON body to an HttpOnly cookie. Identified by X-Client: web. */
 function isWebClient(req) {
   return String(req.headers["x-client"] || "").toLowerCase() === "web";

@@ -1,4 +1,4 @@
-# FleetFlow backend image — multi-target (blueprint §4.4 / §13).
+# FleetFlow backend image — multi-target.
 #   api    : REST API + WebSocket (node src/server.js)
 #   worker : BullMQ background workers (node src/jobs/worker.js)
 # Build e.g.: docker build -t fleetflow-api --target api .
@@ -12,9 +12,8 @@ RUN npm install --omit=dev || npm install --omit=dev --no-audit --no-fund
 COPY prisma ./prisma
 RUN npx prisma generate
 COPY src ./src
-# One ops tool belongs in the image: one-time bootstrap-admin for the production
-# kubectl exec path (§5.2/§13.4). Everything else under scripts/ stays out of the
-# build context via .dockerignore (verify/load-test scripts run from a checkout).
+# One operations tool belongs in the image: the one-time bootstrap-admin script.
+# Everything else under scripts/ stays out of the build context via .dockerignore.
 COPY scripts/bootstrap-admin.js ./scripts/bootstrap-admin.js
 
 # Prisma engine resolution (Phase 13): runtime openssl probing on Alpine can
@@ -30,8 +29,8 @@ FROM base AS worker
 ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node
 CMD ["node", "src/jobs/worker.js"]
 
-# Phase 15 (blueprint §13.4): pre-deploy migrations as a k8s Job. The runtime
-# images install --omit=dev, so the prisma CLI (a devDependency) is not present.
+# Dedicated pre-deploy migration image. The runtime images install --omit=dev,
+# so the Prisma CLI (a devDependency) is not present.
 # Deliberately NOT based on the alpine `base` stage: on Alpine, prisma's openssl
 # probe fails and it downloads linux-musl engines that link libssl.so.1.1 (not
 # present on modern Alpine) — migrate deploy dies with "Error loading shared

@@ -1,5 +1,5 @@
 /**
- * GET /api/geofences/:id/history (blueprint §4.2 + §7.2 item 5) — per-fence
+ * GET /api/geofences/:id/history — per-fence
  * compliance trail: which vehicles entered/exited a fence, when, on which
  * trip. Fleet-operations only (ADMIN/FLEET_MANAGER); the soft-OFF'd fence
  * keeps answering so a "deleted" fence's history survives (§6.3).

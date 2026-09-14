@@ -10,7 +10,7 @@ import io.sentry.android.core.SentryAndroid
 class FleetApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        // Phase 13 (blueprint §11.4, Android surface): Sentry crash/ANR error
+        // Phase 13: Sentry crash/ANR error
         // reporting. Stub-until-configured like the other providers (FCM/SMS):
         // the DSN is injected at build time from local.properties SENTRY_DSN
         // (release builds via CI secret — never committed), and a blank DSN

@@ -20,7 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 /**
- * FCM push receipt (blueprint §10.1/§10.3, Phase-7 Android half).
+ * FCM push receipt.
  *
  * - onNewToken: a refreshed registration token is uploaded to the backend
  *   (POST /api/users/me/device-tokens) so fleet alerts keep reaching this

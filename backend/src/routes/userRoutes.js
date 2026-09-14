@@ -22,7 +22,7 @@ router.get("/me/notification-prefs", async (req, res, next) => {
   }
 });
 
-// PATCH /api/users/me/notification-prefs (Phase 7, blueprint §713)
+// PATCH /api/users/me/notification-prefs
 router.patch("/me/notification-prefs", validate(notificationPrefsSchema), async (req, res, next) => {
   try {
     const results = [];

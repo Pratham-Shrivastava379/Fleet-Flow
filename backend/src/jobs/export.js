@@ -1,5 +1,5 @@
 /**
- * Phase 12 (blueprint §4.4/§7.2 item 3): exports queue consumer.
+ * Phase 12: exports queue consumer.
  *
  * Runs `exportService.runExportJob` — status transitions (PENDING → RUNNING →
  * DONE/FAILED) and CSV generation live in the service so they're testable

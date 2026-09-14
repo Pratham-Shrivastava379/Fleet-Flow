@@ -2,7 +2,7 @@ import { prisma } from "../prisma.js";
 
 /**
  * Create monthly partitions on the partitioned parent "LocationPing" ahead of
- * time (blueprint §4.4 partition-maintenance). Postgres requires a partition to
+ * time. Postgres requires a partition to
  * exist for any month into which a row will land; this job keeps `monthsAhead`
  * months (incl. the current) provisioned so fleet pings never fail on a missing
  * partition, and reruns are idempotent (CREATE TABLE ... IF NOT EXISTS PARTITION OF).

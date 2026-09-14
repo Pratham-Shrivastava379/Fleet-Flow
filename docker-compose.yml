@@ -4,9 +4,9 @@
 #   docker compose up -d                          # full stack: infra + api + worker
 #                                                #   + observability (Phase 13 §11/§13.1)
 #
-# Postgres+PostGIS is the target system of record (blueprint ADR-2); Redis backs
+# Postgres+PostGIS is the target system of record; Redis backs
 # rate limiting, pub/sub and BullMQ from Phase 4 onward. The api/worker services
-# build from the multi-target backend Dockerfile (blueprint §13.2); Prometheus,
+# build from the multi-target backend Dockerfile; Prometheus,
 # Grafana and Jaeger make up the Phase 13 observability stack (§11.2/§11.3) —
 # Grafana is pre-provisioned with a FleetFlow overview dashboard
 # (deploy/observability/grafana) showing API request rate/latency/error-rate and

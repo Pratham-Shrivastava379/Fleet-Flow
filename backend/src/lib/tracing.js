@@ -7,7 +7,7 @@ import { resourceFromAttributes } from "@opentelemetry/resources";
 // the functional API `resourceFromAttributes()` replaces it.
 
 /**
- * Phase 13 distributed tracing (blueprint §11.3).
+ * Phase 13 distributed tracing.
  *
  * IMPORTANT ORDERING RULE: this module must be imported (side-effect) BEFORE
  * express/http are first required, so the instrumentations can patch them.

@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Notification-preference policy (blueprint §3.3/§10.2). Pure + JVM so the
+ * Notification-preference policy. Pure + JVM so the
  * "absent row means enabled" backend contract is locked without a device or
  * network: the UI toggle set is always the six AlertTypes, defaults are all
  * enabled, and stored overrides only flip the rows the server actually knows.

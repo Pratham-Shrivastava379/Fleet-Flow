@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# FleetFlow post-deploy smoke test (Phase 14, blueprint §13.4). Asserts the
+# FleetFlow post-deploy smoke test. Asserts the
 # §4.2 health contract — { ok:true, ... } means DB + Redis both responded.
 # Used by deploy.sh (and will be reused by Phase 15's production deploy).
 #

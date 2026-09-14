@@ -1,4 +1,4 @@
-# Phase 14 (blueprint §12.2): CI pipeline. Every PR/push runs the backend suite
+# Phase 14: CI pipeline. Every PR/push runs the backend suite
 # against REAL Postgres+PostGIS / Redis service containers (never SQLite), the
 # Android unit + lint suite, the dashboard lint/typecheck/test/build, and a
 # security scan (prod-dependency npm audit + Trivy scan of the built image).

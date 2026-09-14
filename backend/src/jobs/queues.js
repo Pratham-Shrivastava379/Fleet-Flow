@@ -9,7 +9,7 @@ export const retentionQueue = new Queue("retention", { connection: redis });
 
 // Phase 5: server-authoritative geofence evaluation. One job per ping write,
 // consumed by the worker process so the ping request path never evaluates
-// inline (blueprint §8.3).
+// inline.
 export const geofenceEvalQueue = new Queue("geofence-eval", { connection: redis });
 
 // Phase 7: push/SMS dispatch. Consumed by the worker process so provider calls

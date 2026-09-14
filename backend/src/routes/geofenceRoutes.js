@@ -52,7 +52,7 @@ router.delete("/:id", requireRole("ADMIN", "FLEET_MANAGER"), validate(geofencePa
   }
 });
 
-// GET /api/geofences/:id/history (blueprint §4.2/§7.2 item 5): the compliance
+// GET /api/geofences/:id/history: the compliance
 // trail for one fence — which vehicles entered/exited, when, on which trip.
 // Fleet-operations surface only (drivers keep the read-only active-fence list
 // for on-device awareness, never the audit trail). Works for soft-OFF'd fences

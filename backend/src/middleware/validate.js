@@ -105,7 +105,7 @@ export const pingSchema = {
 };
 
 /**
- * Phase 10 (blueprint §3.6/§4.2): offline batch sync. Same per-item contract as
+ * Phase 10: offline batch sync. Same per-item contract as
  * pingSchema; the array itself is capped (MAX_PING_BATCH) — the client chunks.
  */
 export const pingBatchSchema = {
@@ -147,7 +147,7 @@ export const geofenceSchema = {
     radiusM: z.number().min(10).max(100000),
     // Phase 5: whether a crossing should also raise a GEOFENCE_ENTER/EXIT
     // Alert. GeofenceEvent audit rows are written for every crossing either
-    // way (blueprint §6.3 — audit trail and paging are separate concerns).
+    // way.
     alertOnEnter: z.boolean().optional(),
     alertOnExit: z.boolean().optional(),
   }),
@@ -176,8 +176,8 @@ export const geofenceParamsSchema = {
 };
 
 /**
- * GET /api/geofences/:id/history (blueprint §4.2 — "which vehicles
- * entered/exited, for compliance reporting"): paginated GeofenceEvent listing
+ * GET /api/geofences/:id/history: paginated GeofenceEvent listing showing which
+ * vehicles entered or exited for compliance reporting,
  * for one fence, filterable by vehicle / event type / occurredAt window.
  * Drivers get the read-only fence list for on-device awareness (§3.5) but the
  * compliance trail is a fleet-operations view (ADMIN/FLEET_MANAGER only).

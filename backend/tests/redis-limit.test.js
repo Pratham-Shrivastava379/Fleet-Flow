@@ -1,6 +1,6 @@
 /**
- * Phase 4 — Redis-backed rate-limit SHARING across API instances (blueprint
- * done-condition). Two in-process "instances" (separate Express apps) share one
+ * Redis-backed rate-limit sharing across API instances. Two in-process
+ * "instances" (separate Express apps) share one
  * Redis, so a burst on instance A must also register on instance B. If the limit
  * were per-instance (the Phase 0 in-memory map), B would have its own fresh
  * bucket and none of B's requests would 429 after only 8 hits on A.

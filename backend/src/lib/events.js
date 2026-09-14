@@ -6,7 +6,7 @@ import { getContextLogger } from "./logger.js";
 const log = getContextLogger({ module: "fleet:events" });
 
 /**
- * Cross-process fleet-event fan-out (blueprint ADR-3, minimal Phase-5 version).
+ * Cross-process fleet-event fan-out.
  *
  * Background workers (e.g. geofence-eval) run in a separate process from the
  * API, so they have no WebSocket clients of their own. Workers publish domain
@@ -17,7 +17,7 @@ const log = getContextLogger({ module: "fleet:events" });
  * has no delivery guarantee — a missed WS event is a missed *live update*,
  * never lost data. Publishes are therefore fail-open (§14.3).
  *
- * Phase 6: ALL WS fan-out goes through this channel (blueprint §4.3/§15.6).
+ * Phase 6: ALL WS fan-out goes through this channel.
  * Services publish `{ type, payload, topics }`; every API process subscribes
  * once and delivers each event only to locally-connected sockets whose
  * subscriptions intersect `event.topics`. The publisher itself also receives

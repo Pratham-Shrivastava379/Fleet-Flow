@@ -1,5 +1,5 @@
 /**
- * Phase 4 — background job infrastructure tests (blueprint done-conditions).
+ * Phase 4 — background job infrastructure tests.
  *
  * 1. partition-maintenance creates next month's `location_pings` partition.
  * 2. retention clears expired/used credentials and invites.

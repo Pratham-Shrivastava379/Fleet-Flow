@@ -2,7 +2,7 @@ import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
 
 /**
- * FCM push sender (Phase 7, blueprint §10.1/§344). Credentials come from the
+ * FCM push sender. Credentials come from the
  * environment, never from the repo: either GOOGLE_APPLICATION_CREDENTIALS
  * (path to a service-account JSON) or FCM_SERVICE_ACCOUNT_JSON (the JSON
  * itself, for secrets-manager injection). When neither is configured the

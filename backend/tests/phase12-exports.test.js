@@ -47,7 +47,7 @@ describe("Phase 12 - async CSV exports (SS7.2 item 3)", () => {
     expect(lines[0]).toContain("trip_id");
     expect(lines.length).toBeGreaterThanOrEqual(2);
 
-    // The alias mount from the blueprint: same contract at /api/trips/export.
+    // Alias mount: same contract at /api/trips/export.
     const alias = await request(app)
       .post("/api/trips/export")
       .set("Authorization", `Bearer ${managerToken}`)

@@ -1,6 +1,6 @@
 /**
  * Phase 7 — Notifications: FCM push via the `notifications` job + preference
- * enforcement + device-token registration (blueprint §15.7 done-conditions).
+ * enforcement + device-token registration.
  *
  * 1. Device-token registration endpoint works (upsert semantics).
  * 2. Notification-prefs PATCH is enforced in dispatch: a manager who disabled
@@ -138,7 +138,7 @@ describe("Phase 7 — notification-prefs API", () => {
   });
 });
 
-describe("Phase 7 — notification dispatch (blueprint §15.7 done-conditions)", () => {
+describe("Phase 7 — notification dispatch", () => {
   it("SOS pushes to ALL registered manager/admin device tokens with correct payload, regardless of prefs", async () => {
     const alert = await prisma.alert.create({
       data: { tripId: null, type: "SOS", lat: 12.97, lng: 77.59, detail: "sos-test" },

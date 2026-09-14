@@ -7,7 +7,7 @@ import { getContextLogger } from "../lib/logger.js";
 const log = getContextLogger({ module: "stale-trip-reaper" });
 
 /**
- * Nightly retention/hygiene job (blueprint §4.4). No user-facing behavior —
+ * Nightly retention/hygiene job. No user-facing behavior —
  * removes expired credentials/sessions and expired unused invites. Raw-ping
  * downsampling/archival is deliberately deferred (needs retention policy + S3,
  * Phase 10); this phase just cleans up stale tables.
@@ -22,7 +22,7 @@ export default async function retentionJob() {
     prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: now } } }),
   ]);
 
-  // Phase 10 (blueprint §8.1): stale-trip reaper. A driver app killed without a
+  // Phase 10: stale-trip reaper. A driver app killed without a
   // clean "finish" (crash, dead battery, battery-optimization kill) must not
   // leave a phantom ACTIVE trip forever. Auto-finish with status CANCELLED.
   const reaped = await reapStaleTrips();

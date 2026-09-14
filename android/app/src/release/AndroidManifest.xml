@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Release overlay (Phase 15 hardening, blueprint §5.6): the debug manifest sets
+    Release overlay: the debug manifest sets
     android:usesCleartextTraffic="true" for the local dev backend (10.0.2.2).
     Release builds MUST NOT allow cleartext — production API is HTTPS-only. The
     merger replaces the main manifest's value with false in release builds only;

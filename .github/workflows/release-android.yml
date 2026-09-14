@@ -1,4 +1,4 @@
-# Phase 14 (blueprint §13.4): Android release build on tag push (v*). Produces a
+# Phase 14: Android release build on tag push (v*). Produces a
 # SIGNED release AAB + APK — the keystore is materialized from CI secrets and
 # never enters the repo — and uploads the AAB to the Play Console
 # internal-testing track when Play credentials are configured. Until secrets

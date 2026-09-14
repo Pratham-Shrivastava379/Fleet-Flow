@@ -85,8 +85,8 @@ export async function addPing(user, tripId, ping) {
           throw e;
         }
         const created = await tx.locationPing.create({ data: { tripId, ...ping } });
-        // Phase 5: materialized last-known-position (O(1) live-map reads,
-        // blueprint §6.2/§6.3) — atomic with the ping write. Row is keyed by
+        // Materialized last-known-position for O(1) live-map reads, updated
+        // atomically with the ping write. The row is keyed by
         // vehicle and removed when the trip finishes (see finishTrip).
         await tx.fleetLastPosition.upsert({
           where: { vehicleId: trip.vehicleId },
@@ -122,7 +122,7 @@ export async function addPing(user, tripId, ping) {
   );
   if (result.duplicate) return result;
 
-  // Phase 5 (blueprint §8.3): geofence enter/exit is evaluated SERVER-SIDE by
+  // Phase 5: geofence enter/exit is evaluated SERVER-SIDE by
   // a background job — never inline, never by the client. Enqueue is fire-and-
   // forget: a Redis/queue outage must not fail the ping write (§14.3).
   geofenceEvalQueue
@@ -176,7 +176,7 @@ export async function addPing(user, tripId, ping) {
 }
 
 /**
- * Phase 10 (blueprint §3.6/§4.2): offline batch sync. Drains a long-offline
+ * Phase 10: offline batch sync. Drains a long-offline
  * client in ONE HTTP call instead of hundreds of single-ping posts.
  *
  * Contract (mirrors addPing per item):
@@ -465,7 +465,7 @@ export async function listTrips(user, { status, driverId, page, pageSize }) {
       include: {
         // Phase 11: the web dashboard's live fleet map reads the ACTIVE-trips
         // listing and needs each vehicle's materialized last position for the
-        // initial paint (blueprint §15.11 "FleetLastPosition-backed data");
+        // initial paint;
         // subsequent updates arrive over WS (location / location_batch).
         vehicle: { include: { fleetLastPosition: true } },
         driver: { select: { id: true, name: true } },

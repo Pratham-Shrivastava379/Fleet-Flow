@@ -40,7 +40,7 @@ function allowedTopics(topics, user) {
   return [...new Set(granted)];
 }
 
-/** Default subscriptions for a freshly authenticated socket (blueprint §4.3). */
+/** Default subscriptions for a freshly authenticated socket. */
 function defaultTopics(user) {
   return user.role === "DRIVER" ? [`driver:${user.id}`] : ["fleet:all"];
 }

@@ -1,10 +1,10 @@
 /**
- * Phase 15 load test — ping-ingestion write path (blueprint §12.1).
+ * Phase 15 load test — ping-ingestion write path.
  *
  * The dominant write at fleet scale is location pings (active trips × ping
  * frequency). This script drives the real `POST /api/trips/:id/pings` endpoint
  * against a running stack and reports throughput + latency percentiles.
- * Blueprint placeholder target: ~100 writes/sec sustained (500 active trips ×
+ * Load-test target: ~100 writes/sec sustained (500 active trips ×
  * 1 ping / 5s), spiking higher — tune PINGS_PER_SECOND to probe above it.
  *
  * Usage (against the docker-compose stack, or any running API):

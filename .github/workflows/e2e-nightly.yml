@@ -1,4 +1,4 @@
-# Phase 14 (blueprint §12.2): full-stack E2E on a schedule — the repo's
+# Phase 14: full-stack E2E on a schedule — the repo's
 # established E2E convention (backend/scripts/verify-phase12-web.mjs, the same
 # script every phase verifies locally) run against the containerized
 # api+worker+Postgres+Redis stack. Weekly, not per-PR, to control runner cost.

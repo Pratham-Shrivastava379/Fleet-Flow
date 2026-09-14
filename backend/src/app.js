@@ -15,7 +15,7 @@ import userAdminRoutes from "./routes/userAdminRoutes.js";
 import exportRoutes from "./routes/exportRoutes.js";
 import { rateLimit } from "./middleware/rateLimit.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
-// Phase 13 observability (blueprint §11): request-context/logging + metrics.
+// Phase 13 observability: request-context/logging + metrics.
 import { requestContext } from "./middleware/requestContext.js";
 import { metricsMiddleware } from "./middleware/metrics.js";
 import { getContextLogger } from "./lib/logger.js";
@@ -74,8 +74,7 @@ export function createApp() {
     res.json({ ok: db && redisUp, db, redis: redisUp, ts: new Date().toISOString() });
   });
 
-  // §4.2/§11.2 metrics contract: Prometheus text format. Protected per the
-  // blueprint ("internal network / auth token, not public"): when
+  // Prometheus text format. The endpoint supports bearer-token protection: when
   // METRICS_TOKEN is set, scrapes must present it as a Bearer token.
   app.get("/api/metrics", async (req, res) => {
     const expected = config.metricsToken;

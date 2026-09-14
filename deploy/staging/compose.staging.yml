@@ -1,4 +1,4 @@
-# FleetFlow STAGING stack (Phase 14, blueprint §13.4). Image-based variant of
+# FleetFlow staging stack. Image-based variant of
 # the local compose stack — api/worker run the CD-published images instead of
 # local builds. Everything is parameterized so the same file deploys any image
 # tag (the git SHA) and rollback re-runs it with the previous tag.

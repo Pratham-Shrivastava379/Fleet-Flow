@@ -2,7 +2,7 @@ import { prisma } from "../prisma.js";
 import { getContextLogger } from "../lib/logger.js";
 
 /**
- * Append-only audit trail writer (blueprint §5, Phase 2).
+ * Append-only audit trail writer.
  * Fire-and-forget safe: audit failures must never break the main flow, but
  * they are logged loudly. Query API for admins: Phase 12 dashboard viewer
  * (§7.3) with action/actor/free-text filters.

@@ -314,7 +314,7 @@ class TripRepository(
         runCatching { api.me().user }
     }
 
-    // ---- Notification prefs + push device tokens (blueprint §10/§3.3 Profile) ----
+    // ---- Notification prefs + push device tokens ----
 
     /** Full per-alert-type toggle map (backend returns overrides only — merged
      *  against the all-enabled defaults by NotificationPrefs). */

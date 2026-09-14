@@ -72,7 +72,7 @@ function deliverDevToken({ kind, email, role = null, token }) {
 }
 
 const BCRYPT_ROUNDS = 12;
-const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour, single-use (blueprint §5.2)
+const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour, single-use
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days, single-use
 
 function hashToken(token) {
@@ -99,7 +99,7 @@ async function issueRefreshToken(userId, familyId = crypto.randomUUID()) {
 }
 
 /**
- * Registration ALWAYS creates a DRIVER (blueprint §5.1). No client-suppliable
+ * Registration ALWAYS creates a DRIVER. No client-suppliable
  * role, no exceptions — elevation happens exclusively via admin invite.
  */
 export async function register({ email, password, name }) {
@@ -133,7 +133,7 @@ export async function login({ email, password }) {
 }
 
 /**
- * Rotation with token-family breach response (blueprint §5.3): using a token
+ * Rotation with token-family breach response: using a token
  * that was already rotated (replayed) is treated as a stolen-token signal —
  * the ENTIRE family is revoked, logging out attacker and legitimate client.
  */
@@ -186,7 +186,7 @@ export async function logout(rawToken) {
 /**
  * Password reset request. Always responds the same regardless of whether the
  * email exists (no account enumeration). Email sending is deferred per
- * blueprint Phase 2 — the token is logged to the server console for local dev.
+ * initial setup — the token is logged to the server console for local dev.
  */
 export async function forgotPassword(email) {
   const user = await prisma.user.findUnique({ where: { email } });
@@ -234,7 +234,7 @@ export async function resetPassword({ token, password }) {
 }
 
 /**
- * ADMIN-only elevation flow (blueprint §5.1): invite a FLEET_MANAGER or ADMIN
+ * ADMIN-only elevation flow: invite a FLEET_MANAGER or ADMIN
  * by email.
  *
  * §5 (invite delivery seam): the invite token is an account-creation SECRET.

@@ -238,8 +238,8 @@ class FleetOperationsViewModel @Inject constructor(
 }
 
 /**
- * Profile (§3.3): identity + notification preferences (blueprint §3.3 Profile
- * rows / §10.2) + logout. FCM device-token unregistration runs BEFORE the
+ * Profile identity, notification preferences, and logout. FCM device-token
+ * unregistration runs BEFORE the
  * local tokens are cleared so the DELETE request is still authorized.
  */
 @HiltViewModel

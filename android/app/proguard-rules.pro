@@ -13,7 +13,7 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Phase 13 — Sentry (blueprint §11.4). Sentry SDK ships its own consumer rules;
+# Phase 13 — Sentry. Sentry SDK ships its own consumer rules;
 # these cover the classes referenced from FleetApp so minified release builds
 # keep the initialization path intact (see sentry-android docs).
 -dontwarn io.sentry.**

@@ -24,7 +24,7 @@ val localProps = Properties().apply {
     if (f.exists()) f.inputStream().use { load(it) }
 }
 
-// Phase 14 (blueprint §13.4): release signing keys come from the environment —
+// Phase 14: release signing keys come from the environment —
 // CI materializes the keystore from secrets and sets KEYSTORE_PATH /
 // KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD. The key is NEVER committed.
 // Absent env = unsigned release build (local dev; stub-until-configured).
@@ -178,7 +178,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 
-    // Phase 8: Room DAO instrumentation tests (blueprint §15.8 done-condition)
+    // Phase 8: Room DAO instrumentation tests
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:core:1.6.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
@@ -186,7 +186,7 @@ dependencies {
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     kspAndroidTest("com.google.dagger:hilt-compiler:2.52")
 
-    // Phase 9: Compose UI critical-path tests (blueprint §15.9 done-condition)
+    // Phase 9: Compose UI critical-path tests
     androidTestImplementation(platform(composeBom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.test:rules:1.6.1")

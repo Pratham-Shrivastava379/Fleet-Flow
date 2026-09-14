@@ -34,7 +34,7 @@
             android:exported="false"
             android:foregroundServiceType="location" />
 
-        <!-- FCM push receipt (blueprint §10): token-refresh upload + alert
+        <!-- FCM push receipt: token-refresh upload + alert
              notification display. Dormant until google-services.json/Firebase
              are configured — the service never fires without a FirebaseApp
              (§5.6 stub-until-configured). -->

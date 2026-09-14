@@ -1,11 +1,11 @@
 -- Phase 4: make location_pings a monthly RANGE(createdAt) partitioned table and
 -- add the IdempotencyKey dedup table.
 --
--- Postgres note (see IMPLEMENTATION_PROGRESS.md "Phase 4 notes"): a unique/PK on
+-- Postgres note: a unique/PK on
 -- a RANGE-partitioned table must include the partition key, so a global unique on
 -- `idempotencyKey` canNOT coexist on "LocationPing". The global-unique dedup
--- constraint therefore lives on the new "IdempotencyKey" table (blueprint §1.1
--- pattern preserved); addPing gates on it before writing the partitioned row.
+-- constraint therefore lives on the new "IdempotencyKey" table; addPing gates
+-- on it before writing the partitioned row.
 
 -- 1) IdempotencyKey (global unique dedup gate)
 CREATE TABLE "IdempotencyKey" (

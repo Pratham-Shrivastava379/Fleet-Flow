@@ -1,5 +1,5 @@
 /**
- * Phase 10 — offline hardening + stale-trip reaper (blueprint §15.10 done-conditions).
+ * Phase 10 — offline hardening + stale-trip reaper.
  *
  * 1. A batch of hundreds of queued offline pings drains in ONE
  *    `POST /api/trips/:id/pings/batch` call (per-item idempotency, per-item

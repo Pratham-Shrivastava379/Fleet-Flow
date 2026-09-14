@@ -91,7 +91,7 @@ export async function me(): Promise<User> {
 // ---- Fleet / live map ----
 
 /** Phase 11: active trips with each vehicle's FleetLastPosition for the map's
- *  initial paint (blueprint §15.11). Live updates then come over the WS. */
+ *  initial paint. Live updates then come over the WS. */
 export async function activeTrips(pageSize = 100): Promise<ActiveTrip[]> {
   const safePageSize = Math.min(Math.max(Math.trunc(pageSize), 1), 100);
   const res = await apiRequest<TripsResponse>(
@@ -101,7 +101,7 @@ export async function activeTrips(pageSize = 100): Promise<ActiveTrip[]> {
 }
 
 // ============================ Phase 12 ============================
-// Blueprint §7.2: Alerts → Trips + CSV export → Vehicles → Geofences →
+// Operations API: Alerts → Trips + CSV export → Vehicles → Geofences →
 // Users (ADMIN) → Audit Log (ADMIN). Same REST/WS API as the app.
 
 // ---- Alerts (§7.2 item  1) ----

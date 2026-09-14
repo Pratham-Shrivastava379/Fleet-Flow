@@ -3,7 +3,7 @@ import { getContextLogger } from "../lib/logger.js";
 import { geofenceEvalDuration, geofenceEvalProcessedTotal } from "../lib/metrics.js";
 
 /**
- * geofence-eval job handler (Phase 5, blueprint §8.3; batch mode Phase 10).
+ * Geofence-evaluation job handler for single pings and batches.
  * Runs the server-authoritative enter/exit evaluation: transition-only
  * GeofenceEvent writes, flag-conditional Alerts, fleet:events fan-out.
  * Idempotent via per-vehicle advisory lock + transition detection, so BullMQ

@@ -4,7 +4,7 @@ import * as audit from "./auditService.js";
 import bcrypt from "bcryptjs";
 
 /**
- * Phase 12 (blueprint §7.2 item 4): fleet-manager/admin user directory.
+ * Phase 12: fleet-manager/admin user directory.
  *
  * Read APIs for any fleet role (drivers are visible to managers); mutations
  * are ADMIN-only and always audited. Role changes use the dedicated

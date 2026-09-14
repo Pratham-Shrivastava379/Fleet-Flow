@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/node";
 
 /**
- * Phase 13 error tracking (blueprint §11.4, backend surface).
+ * Phase 13 error tracking.
  *
  * Stub-until-configured like FCM/SMS (Phase 7 convention): Sentry is fully
  * inert until SENTRY_DSN is set — no DSN, no network, no behavior change.

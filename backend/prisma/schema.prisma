@@ -1,4 +1,4 @@
-// FleetFlow schema — PostgreSQL + PostGIS (Phase 1, blueprint ADR-2).
+// FleetFlow schema — PostgreSQL + PostGIS.
 // Geospatial: coordinates are Floats for the Prisma-facing API; a stored
 // generated `geog geography(Point,4326)` column is added by raw SQL migration
 // (prisma can't model geography natively) and used by ST_DWithin queries.
@@ -202,7 +202,7 @@ model LocationPing {
 // SQL migration `phase4_partitioning`). Postgres requires any unique/PK column
 // set to include the partition key, so a global unique on `idempotencyKey`
 // cannot live on that table. To preserve the offline-sync dedup pattern
-// (blueprint §1.1) we keep the unique DB constraint here instead: addPing gates
+// we keep the unique DB constraint here instead: addPing gates
 // on this table, so a replayed idempotencyKey is deduplicated before the ping
 // row is written. The idempotencyKey column above is retained on the ping row
 // for observability but is NOT unique.
@@ -335,7 +335,7 @@ model ExportJob {
   @@index([requestedBy, createdAt])
 }
 
-// Audit trail of geofence crossings (Phase 5, blueprint §6.2/§8.3). Written by
+// Audit trail of geofence crossings. Written by
 // the server-side geofence-eval job on an inside/outside TRANSITION only —
 // never per ping. Separate from Alert so unflagged fences still leave a full
 // compliance trail without polluting the alert inbox (§6.3).
@@ -355,7 +355,7 @@ model GeofenceEvent {
   @@index([vehicleId, occurredAt])
 }
 
-// Materialized one-row-per-vehicle last known position (blueprint §6.2/§6.3).
+// Materialized one-row-per-vehicle last known position.
 // Upserted on every ping write so live-map reads are O(1) instead of a
 // DISTINCT ON over the fast-growing partitioned LocationPing table. The row
 // is removed when its trip finishes (rows exist only for vehicles on an

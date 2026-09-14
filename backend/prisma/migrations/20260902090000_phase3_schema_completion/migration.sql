@@ -1,8 +1,8 @@
 -- Phase 3: Data model completion.
 -- NOTE: generated via `prisma migrate diff`, then the spurious
 -- `DROP INDEX "Geofence_center_gix"` / `ALTER TABLE "Geofence" DROP COLUMN "center"`
--- statements were removed (see IMPLEMENTATION_PROGRESS.md gotcha: the PostGIS
--- generated column is invisible to the Prisma schema). This migration does NOT
+-- statements were removed because the PostGIS generated column is invisible to
+-- the Prisma schema. This migration does NOT
 -- touch Geofence, so `center` is preserved.
 
 -- CreateEnum

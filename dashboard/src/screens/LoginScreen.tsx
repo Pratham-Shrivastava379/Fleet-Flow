@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../auth/AuthContext";
 
-/** Fleet manager / admin sign-in (blueprint §5.4): the access token returned by
+/** Fleet manager / admin sign-in: the access token returned by
  *  the web login is stored in memory only; the refresh token never touches
  *  JS-readable storage — the server sets it in an HttpOnly cookie. */
 export function LoginScreen() {

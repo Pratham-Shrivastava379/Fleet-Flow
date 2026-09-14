@@ -1,10 +1,9 @@
--- Phase 5 (blueprint §15): geofence evaluation moves server-side/async.
+-- Phase 5: geofence evaluation moves server-side/async.
 -- Adds: GeofenceEventType enum + GeofenceEvent crossing audit table,
 -- Geofence.alertOnEnter/alertOnExit flags, FleetLastPosition materialized
 -- last-known-position table (with a Prisma-invisible PostGIS `geo` column).
 --
--- Prisma-invisible artifact handling (established convention, see
--- IMPLEMENTATION_PROGRESS.md "Phase 2 notes" gotcha):
+-- Prisma-invisible artifact handling:
 --  * The generated diff wanted to DROP `Geofence.center` (PostGIS stored-
 --    generated column, invisible to the Prisma schema) — removed; re-asserted
 --    idempotently at the bottom instead.
@@ -77,7 +76,7 @@ ALTER TABLE "FleetLastPosition" ADD CONSTRAINT "FleetLastPosition_driverId_fkey"
 -- statements idempotent in case the artifacts survived.
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- FleetLastPosition.geo: stored-generated geography column (blueprint §6.2) so
+-- FleetLastPosition.geo: stored-generated geography column so
 -- future proximity queries ("vehicles near X") can use the GIST index without
 -- re-touching this table.
 ALTER TABLE "FleetLastPosition" ADD COLUMN IF NOT EXISTS "geo" geography(Point, 4326)

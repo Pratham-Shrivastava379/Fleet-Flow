@@ -1,7 +1,7 @@
 import { clearAccessToken, getAccessToken, setAccessToken } from "./tokenStore";
 
 /** Web clients always identify as `web` so the backend uses cookie-based
- *  refresh-token delivery (blueprint §5.4). */
+ *  refresh-token delivery. */
 const WEB_CLIENT_HEADERS = { "X-Client": "web" };
 
 /** Thrown when a request fails authorization permanently (refresh failed). */

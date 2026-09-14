@@ -8,7 +8,7 @@ import { exportArtifactPath } from "../src/services/exportService.js";
 import { expect } from "./expectShim.js";
 
 /**
- * Phase 12 shared test fixtures (blueprint §15.12): users + login tokens,
+ * Phase 12 shared test fixtures: users + login tokens,
  * DB reset, and a COMPLETED-trip-with-alert seeder for export/triage tests.
  */
 export const app = createApp();

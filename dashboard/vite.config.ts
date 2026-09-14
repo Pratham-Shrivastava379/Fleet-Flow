@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
-// Phase 11 (blueprint §5.4/§13.2): the SPA is served same-origin with the
+// Phase 11: the SPA is served same-origin with the
 // backend - Vite proxies /api and /ws to the Express/WS server. This keeps the
 // web auth cookie same-site in local dev (no SSR/external CDN needed yet) and
 // matches the preferred same-origin production serving (§13.2).

@@ -3,7 +3,7 @@ import pino from "pino";
 import config from "../config.js";
 
 /**
- * Phase 13 structured logging (blueprint §11.1). Replaces ad-hoc
+ * Phase 13 structured logging. Replaces ad-hoc
  * console.log/console.error across the backend. Every line is JSON with
  * { time, level, service, msg, ...context }; in-request lines additionally
  * carry { requestId, userId } (userId once auth has run).

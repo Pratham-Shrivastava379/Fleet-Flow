@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# FleetFlow staging deploy (Phase 14, blueprint §13.4): rolling update of the
+# FleetFlow staging deploy: rolling update of the
 # api/worker services on a docker-compose host, smoke-tested, with automatic
 # rollback to the previously-good image tag when the smoke test fails.
 #

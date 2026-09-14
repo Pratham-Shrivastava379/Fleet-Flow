@@ -7,7 +7,7 @@ import { prisma } from "../prisma.js";
 import { record } from "./auditService.js";
 
 /**
- * Phase 12 (blueprint §4.2/§7.2 item 3/§6.2): async CSV export.
+ * Phase 12: async CSV export.
  *
  * Contract: the REST path (`POST /api/trips/export` or `POST /api/reports`,
  * same router) only enqueues an `exports` BullMQ job and returns 202 `{job}`;
@@ -73,8 +73,8 @@ const CSV_COLUMNS = {
 const isoOrNull = (d) => (d ? new Date(d).toISOString() : "");
 
 /** CSV-injection guard + null/undefined → empty string. A manager-exported CSV
- *  is re-opened elsewhere, so a leading = + - @ must not be read as a formula
- *  (blueprint §7.3 export robustness). Applies to free-text/extracted cells. */
+ *  is re-opened elsewhere, so a leading = + - @ must not be read as a formula.
+ *  Applies to free-text/extracted cells. */
 const csvCell = (v) => {
   if (v === null || v === undefined) return "";
   const s = String(v);

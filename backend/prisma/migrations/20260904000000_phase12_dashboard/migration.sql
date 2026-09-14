@@ -1,12 +1,12 @@
--- Phase 12: web dashboard backend support (blueprint §15.12).
+-- Phase 12: web dashboard backend support.
 --  - Alert triage metadata (§6.2 target Alert shape): raised/acknowledged/resolved actor+time
 --  - Vehicle default-driver assignment + maintenance note (§7.2 item 4)
 --  - ExportJob table for async CSV exports (§6.2; worker consumes, §4.4)
 --  - UserStatus deactivation flag (§5.1 account activation semantics for the Users screen)
 --  - AuditAction values for user admin + export lifecycle
 --
--- NOTE: generated via `prisma migrate diff` (create-only pattern from
--- IMPLEMENTATION_PROGRESS.md). The diff suggested dropping the Prisma-invisible
+-- NOTE: generated via `prisma migrate diff` with the create-only pattern. The
+-- diff suggested dropping the Prisma-invisible
 -- PostGIS columns ("Geofence"."center", "FleetLastPosition"."geo") and changing
 -- the partitioned "LocationPing" primary key — all three are false diffs (the
 -- columns/PK are managed by raw-SQL migrations phase1/phase4/phase5) and are

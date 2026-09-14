@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { als, logger } from "../lib/logger.js";
 
 /**
- * Phase 13 (blueprint §11.1): per-request context + structured request log.
+ * Phase 13: per-request context + structured request log.
  *
  * - Generates (or honors an inbound) x-request-id, echoes it as a response
  *   header, and runs the rest of the request inside the logger ALS store so

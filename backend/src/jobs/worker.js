@@ -14,7 +14,7 @@ import { startWorkerMetricsServer, refreshQueueMetrics, incQueueCompleted, incQu
 import { shutdownTracing } from "../lib/tracing.js";
 
 /**
- * BullMQ worker process (separate deployable from the API — blueprint ADR-1,
+ * BullMQ worker process (separate deployable from the API — architecture,
  * §4.4). Started with `node src/jobs/worker.js`; consumes the retention and
  * partition-maintenance queues, sharing the same Prisma client / service-layer
  * code as the API. Runs until SIGTERM/SIGINT.
@@ -44,7 +44,7 @@ function makeWorker(name, handler, concurrency) {
 const workers = [
   makeWorker("partition-maintenance", partitionMaintenanceJob, 1),
   makeWorker("retention", retentionJob, 1),
-  // DB-bound; concurrency kept modest per blueprint §14.2 (tuned against the
+  // DB-bound; concurrency is tuned against the
   // Postgres connection pool; per-vehicle advisory locks keep evals correct
   // even with several worker replicas).
   makeWorker("geofence-eval", geofenceEvalJob, 2),

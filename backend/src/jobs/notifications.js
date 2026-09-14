@@ -7,12 +7,11 @@ import { withSpan } from "../lib/tracing.js";
 import { notificationDispatchDuration } from "../lib/metrics.js";
 
 /**
- * `notifications` job (Phase 7, blueprint §307/§490). Runs in the background
+ * `notifications` job. Runs in the background
  * worker process so slow/flaky provider calls never block the alert-creating
  * request path. data: {alertId, requestId?}.
  *
- * Recipients: every ADMIN/FLEET_MANAGER's registered device tokens
- * (blueprint §490: "all currently-registered manager/admin device tokens").
+ * Recipients: every ADMIN/FLEET_MANAGER's registered device tokens.
  *
  * Preference enforcement (§713): a recipient's NotificationPreference for the
  * alert type suppresses the push — EXCEPT SOS, which is exempt from

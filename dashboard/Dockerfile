@@ -1,4 +1,4 @@
-# FleetFlow dashboard image (blueprint §13.2): Vite build stage → minimal
+# FleetFlow dashboard image: Vite build stage → minimal
 # nginx serving the SPA. Built/pushed by the CD workflow (cd.yml) — also handy
 # for local/staging parity; production can equally deploy the static dist/ to
 # a CDN instead of running a container (§13.2 / §13.3).

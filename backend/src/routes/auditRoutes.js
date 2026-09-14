@@ -6,7 +6,7 @@ import { requireAuthDb, requireRole } from "../middleware/auth.js";
 const router = Router();
 router.use(requireAuthDb);
 
-/** Audit log query API — ADMIN-only (blueprint §11.5: "query API for admins").
+/** Audit log query API — ADMIN-only.
  *  Phase 12 (§7.3): adds action/actor/free-text filters for the dashboard's
  *  audit viewer. */
 router.get("/", requireRole("ADMIN"), validate(auditQuerySchema), async (req, res, next) => {

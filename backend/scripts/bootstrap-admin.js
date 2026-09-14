@@ -1,5 +1,5 @@
 /**
- * One-time bootstrap: create the first ADMIN account (blueprint Phase 2).
+ * One-time bootstrap: create the first ADMIN account.
  * Registration is always DRIVER now — the only way to get the first admin is
  * this script, run against the DB directly:
  *

@@ -9,7 +9,7 @@ const config = {
   refreshTtlDays: 7,
   nodeEnv: process.env.NODE_ENV || "development",
   isProd: process.env.NODE_ENV === "production",
-  // Web dashboard (Phase 11, blueprint §5.4): refresh token delivered as an
+  // Web dashboard refresh token delivered as an
   // HttpOnly SameSite=Strict cookie for browser clients (X-Client: web) rather
   // than in the JSON body (which mobile keeps). Never JS-accessible.
   webRefreshCookieName: process.env.WEB_REFRESH_COOKIE || "fleetflow_refresh",
@@ -21,14 +21,13 @@ const config = {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
-  // Phase 4 (blueprint §4.2): global per-IP rate limit. 300 req/min is the
+  // Phase 4: global per-IP rate limit. 300 req/min is the
   // MVP default — fine for interactive use and generous per single device, but
   // Phase 15 (production/load) exposes the ceiling via RATE_LIMIT_GLOBAL_MAX so
   // a capacity run (or a fleet behind one egress NAT) can raise it. Auth routes
   // keep their own stricter limiter regardless.
   rateLimitGlobalMax: Number(process.env.RATE_LIMIT_GLOBAL_MAX || 300),
-  // Phase 7: SOS SMS fallback — strictly opt-in (blueprint §714/§512: the
-  // system must function fully without SMS configured).
+  // SOS SMS fallback is strictly opt-in; the system works without SMS configured.
   smsSosEnabled: process.env.SMS_SOS_ENABLED === "true",
   twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || "",
   twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || "",

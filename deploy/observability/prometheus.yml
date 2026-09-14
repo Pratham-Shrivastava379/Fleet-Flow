@@ -1,4 +1,4 @@
-# FleetFlow Prometheus scrape config (Phase 13, blueprint §11.2).
+# FleetFlow Prometheus scrape configuration.
 #
 # Two scrape targets, matching the two processes that hold metrics:
 #   1. the API process  -> GET /api/metrics  (http_request_*, ws_connections,

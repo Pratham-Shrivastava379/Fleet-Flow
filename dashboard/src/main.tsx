@@ -6,7 +6,7 @@ import App from "./App";
 import { AuthProvider } from "./auth/AuthContext";
 import "./styles.css";
 
-// Phase 13 (blueprint §11.4, web-dashboard surface). Error tracking is
+// Phase 13. Error tracking is
 // stub-until-configured like the backend/Android surfaces: without
 // VITE_SENTRY_DSN nothing is initialized, no network, no behavior change.
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;

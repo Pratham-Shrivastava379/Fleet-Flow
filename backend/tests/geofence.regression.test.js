@@ -1,5 +1,5 @@
 /**
- * Phase 1 regression test (blueprint done-condition):
+ * Phase 1 regression test:
  * PostGIS ST_DWithin/ST_Distance must give the same containment result as the
  * old in-process haversine math for a fixed fixture set, before the old code
  * is deleted. Haversine is intentionally reimplemented here as the reference.

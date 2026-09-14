@@ -13,8 +13,7 @@ import retrofit2.http.Query
 // ---- DTOs (mirror backend/src/middleware/validate.js contracts) ----
 
 @Serializable data class LoginRequest(val email: String, val password: String)
-// Registration always yields DRIVER server-side (no client-suppliable role —
-// the backend ignores/rejects role params; blueprint §5.1) so the field is gone.
+// Registration always yields DRIVER server-side, so the request has no role field.
 @Serializable data class RegisterRequest(val email: String, val password: String, val name: String)
 @Serializable data class UserDto(val id: Int, val email: String, val name: String, val role: String)
 @Serializable data class AuthResponse(val user: UserDto, val accessToken: String, val refreshToken: String)
@@ -121,7 +120,7 @@ interface ApiService {
         @Query("pageSize") pageSize: Int = 50,
     ): AuditLogsResponse
 
-    // ---- Push + notification prefs (blueprint §10, §3.3 Profile) ----
+    // ---- Push + notification prefs ----
     @GET("api/users/me/notification-prefs")
     suspend fun notificationPrefs(): NotificationPrefsBody
     @PATCH("api/users/me/notification-prefs")

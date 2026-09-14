@@ -1,5 +1,5 @@
 /**
- * Phase 6 — WebSocket protocol extensions (blueprint §4.3 / §15.6 done-conditions).
+ * Phase 6 — WebSocket protocol extensions.
  *
  * 1. TWO WS instances (separate http servers = simulated horizontal scale) share
  *    ONE Redis; an event published through `publishFleetEvent` is delivered to

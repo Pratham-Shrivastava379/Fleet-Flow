@@ -1,5 +1,5 @@
 /**
- * Phase 11 — web dashboard auth (blueprint §5.4): the same JWT auth as mobile,
+ * Phase 11 — web dashboard auth: the same JWT auth as mobile,
  * but for a browser SPA the refresh token is delivered as an HttpOnly,
  * SameSite=Strict cookie (never the JSON body, never localStorage), while the
  * access token is returned in the body for the SPA to hold in memory.

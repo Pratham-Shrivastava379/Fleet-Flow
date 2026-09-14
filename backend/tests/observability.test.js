@@ -1,5 +1,5 @@
 /**
- * Phase 13 — Observability (blueprint §11 / §15.13).
+ * Phase 13 — Observability.
  *
  * Covers the pieces that are testable without a live Prometheus/Grafana/Jaeger
  * stack (that proof is the docker-compose verification in the phase log):

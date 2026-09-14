@@ -1,7 +1,7 @@
 package com.fleetflow.fleet.data
 
 /**
- * Notification-preference policy (blueprint §3.3 Profile / §10.2). Pure and
+ * Notification-preference policy. Pure and
  * JVM-testable (no Android deps): the backend treats an ABSENT preference row
  * as "enabled" (the default) and only returns overrides, so the UI must merge
  * stored rows against the full default set before rendering toggles.

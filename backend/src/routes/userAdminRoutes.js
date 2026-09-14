@@ -6,7 +6,7 @@ import * as users from "../services/userService.js";
 import * as audit from "../services/auditService.js";
 
 /**
- * Phase 12 (blueprint §7.2 item 4): fleet user directory (ADMIN screens).
+ * Phase 12: fleet user directory (ADMIN screens).
  * `GET /users` (any fleet role) reads; mutations are ADMIN-only and audited.
  * Self-service profile endpoints live in userRoutes.js — these are the
  * *administration* endpoints and deliberately don't overlap.

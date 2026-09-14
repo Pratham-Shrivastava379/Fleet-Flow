@@ -1,5 +1,5 @@
 /**
- * In-memory access-token store (blueprint §5.4).
+ * In-memory access-token store.
  *
  * The browser SPA never persists the access token anywhere JS-accessible
  * storage (no localStorage / sessionStorage / cookies) - only in a module-level
