@@ -22,17 +22,27 @@ The project is designed as a production-style engineering portfolio: it includes
 
 ## Architecture
 
-```text
-Android app -------- REST/JWT --------+
-                                      |
-React dashboard ---- REST/WebSocket --+--> Express API --> Prisma --> PostgreSQL/PostGIS
-                                                |
-                                                +--> Redis pub/sub
-                                                +--> BullMQ workers
-                                                +--> Prometheus metrics
+```mermaid
+flowchart LR
+    Driver([Driver]) --> Android[Android app]
+    Operations([Manager / Admin]) --> Dashboard[React dashboard]
 
-OpenTelemetry traces -------------------------------> Jaeger
-Prometheus metrics ---------------------------------> Grafana
+    Android -->|REST + JWT| API[Express API]
+    Dashboard -->|REST + JWT| API
+    API -->|Prisma| Database[(PostgreSQL + PostGIS)]
+    API <--> Redis[(Redis)]
+
+    API -->|background jobs| Queues[BullMQ queues]
+    Queues --> Worker[Worker process]
+    Worker --> Database
+    Worker --> Redis
+
+    Redis -->|live WebSocket events| API
+    API --> Android
+    API --> Dashboard
+
+    API -. metrics and traces .-> Observability[Prometheus · Grafana · Jaeger]
+    Worker -. metrics and traces .-> Observability
 ```
 
 ### Component boundaries
@@ -49,32 +59,30 @@ The backend is a modular monolith: routes validate and authorize requests, servi
 
 ### Offline tracking and synchronization
 
-```text
-Fused Location Provider
-        |
-        v
-Android foreground service --> Room queue --> immediate sync attempt
-                                      |
-                         connectivity unavailable
-                                      |
-                                      v
-                        WorkManager network-constrained retry
-                                      |
-                                      v
-                         ordered batches of up to 500
-                                      |
-                                      v
-                     Express API --> PostgreSQL/PostGIS
+```mermaid
+flowchart LR
+    GPS[Fused Location Provider] --> Service[Android foreground service]
+    Service --> Room[(Room offline queue)]
+    Room --> Sync{Network available?}
+    Sync -->|Yes| Batch[Ordered batch · up to 500]
+    Sync -->|No| Retry[WorkManager retry]
+    Retry --> Sync
+    Batch --> API[Express API]
+    API --> Database[(PostgreSQL + PostGIS)]
 ```
 
 Each ping is stored locally before upload and carries a client-generated UUID. The backend records that key in a unique deduplication table, making retries safe when a mobile connection fails after the server has already accepted a request. Batches are sorted by their original recording time so delayed uploads cannot scramble the route. Successful and duplicate points are removed from Room; failed points remain annotated for retry.
 
 ### Real-time and background processing
 
-```text
-REST write --> PostgreSQL commit --> Redis fleet event --> authorized WebSocket clients
-                         |
-                         +--> BullMQ job --> worker --> geofence/notification/export result
+```mermaid
+flowchart LR
+    Request[REST write] --> Commit[(PostgreSQL commit)]
+    Commit --> Event[Redis fleet event]
+    Event --> Clients[Authorized WebSocket clients]
+    Commit --> Queue[BullMQ job]
+    Queue --> Worker[Worker]
+    Worker --> Result[Geofence · notification · export result]
 ```
 
 WebSocket subscriptions are role-scoped to fleet, driver, or vehicle topics and are revalidated against the database when authority changes. Redis pub/sub carries events across API instances. Five BullMQ queues isolate geofence evaluation, notifications, exports, retention, and partition maintenance from request latency.
