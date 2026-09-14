@@ -24,35 +24,22 @@ The project is designed as a production-style engineering portfolio: it includes
 
 ```mermaid
 flowchart TB
-    Driver([Driver]) --> Android[Android app]
-    Operations([Manager / Admin]) --> Dashboard[React dashboard]
-
-    Android -->|REST + JWT| API[Express API]
-    Dashboard -->|REST + JWT| API
+    Clients[Android app · React dashboard]
+    Clients -->|REST · JWT · WebSocket| API[Express API]
     API -->|Prisma| Database[(PostgreSQL + PostGIS)]
-    API <--> Redis[(Redis)]
-
-    API -->|background jobs| Queues[BullMQ queues]
-    Queues --> Worker[Worker process]
+    API -->|events and jobs| Redis[(Redis)]
+    Redis -->|BullMQ jobs| Worker[Worker process]
     Worker --> Database
-    Worker --> Redis
-
-    Redis -->|live WebSocket events| API
-    API --> Android
-    API --> Dashboard
-
-    API -. metrics and traces .-> Observability[Prometheus · Grafana · Jaeger]
+    API -. telemetry .-> Observability[Prometheus · Grafana · Jaeger]
     Worker -. metrics and traces .-> Observability
 
-    classDef actor fill:#F8FAFC,stroke:#334155,stroke-width:2px,color:#0F172A
     classDef client fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2px,color:#0F172A
     classDef service fill:#DCFCE7,stroke:#15803D,stroke-width:2px,color:#0F172A
     classDef data fill:#F3E8FF,stroke:#7E22CE,stroke-width:2px,color:#0F172A
     classDef observe fill:#FEF3C7,stroke:#B45309,stroke-width:2px,color:#0F172A
-    class Driver,Operations actor
-    class Android,Dashboard client
+    class Clients client
     class API,Worker service
-    class Database,Redis,Queues data
+    class Database,Redis data
     class Observability observe
 ```
 
